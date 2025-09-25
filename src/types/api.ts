@@ -85,6 +85,24 @@ export interface Stats {
   total_persons: number;
   total_images: number;
   total_faces: number;
+  images_with_faces?: number;
+  images_without_faces?: number;
+}
+
+export interface ImageSummary {
+  image_id: string;
+  filename: string;
+  file_path: string;
+  faces_count: number;
+  persons_count: number;
+  upload_date?: string;
+}
+
+export interface AllImagesResponse {
+  images: ImageSummary[];
+  total_images: number;
+  images_with_faces: number;
+  images_without_faces: number;
 }
 
 export interface MoveFaceResponse {

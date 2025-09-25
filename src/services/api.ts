@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Gallery, UploadResponse, ClusterResponse, Stats, PersonDetails, ImageDetails, MoveFaceResponse, MoveFaceToNewPersonResponse } from '@/types/api';
+import type { UploadResponse, ClusterResponse, Stats, PersonDetails, ImageDetails, MoveFaceResponse, MoveFaceToNewPersonResponse } from '@/types/api';
 
 const API_BASE_URL = 'http://localhost:5000';
 
@@ -28,15 +28,68 @@ export const faceAPI = {
     return response.data;
   },
 
-  // Trigger face clustering
-  clusterFaces: async (): Promise<ClusterResponse> => {
-    const response = await api.get<ClusterResponse>('/cluster');
+  // Search for similar faces using an uploaded image
+  searchByImage: async (file: File, tolerance: number = 1, maxResults: number = 5): Promise<{
+    message: string;
+    matches: Array<{
+      face_id: string;
+      confidence: number;
+      distance: number;
+      person?: {
+        person_id: string;
+        person_name: string;
+      };
+      image?: {
+        image_id: string;
+        filename: string;
+      };
+      cropped_face_filename?: string;
+    }>;
+    total_faces_searched: number;
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('tolerance', tolerance.toString());
+    formData.append('max_results', maxResults.toString());
+    
+    const response = await api.post('/search-by-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
-  // Get gallery data
-  getGallery: async (): Promise<Gallery> => {
-    const response = await api.get<Gallery>('/gallery');
+  // Upload multiple images
+  uploadMultipleImages: async (files: File[]): Promise<{
+    message: string;
+    successful_uploads: number;
+    total_files: number;
+    total_faces_detected: number;
+    results: Array<{
+      filename: string;
+      faces_detected: number;
+      persons_assigned: number;
+      image_id: string;
+    }>;
+    errors?: string[];
+  }> => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    
+    const response = await api.post('/upload-multiple', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // Trigger face clustering
+  clusterFaces: async (): Promise<ClusterResponse> => {
+    const response = await api.get<ClusterResponse>('/cluster');
     return response.data;
   },
 
@@ -92,9 +145,38 @@ export const faceAPI = {
     return response.data;
   },
 
-  // Get list of all persons for dropdown
-  getAllPersons: async (): Promise<{ persons: Array<{ id: string; name: string }>; total: number }> => {
-    const response = await api.get('/persons/list');
+  // Get list of all persons for dropdown and persons page
+  getAllPersons: async (): Promise<{ 
+    persons: Array<{ 
+      person_id: string; 
+      person_name: string; 
+      total_faces: number; 
+      total_images: number; 
+      thumbnail: string | null;
+    }>; 
+    total: number 
+  }> => {
+    const response = await api.get('/all-persons');
+    return response.data;
+  },
+
+  // Get all images (with and without faces)
+  getAllImages: async (): Promise<{
+    images: Array<{
+      image_id: string;
+      filename: string;
+      file_path: string;
+      faces_count: number;
+      persons_count: number;
+      persons: Array<{ person_id: string; person_name: string }>;
+      has_faces: boolean;
+      upload_date: string;
+    }>;
+    total_images: number;
+    images_with_faces: number;
+    images_without_faces: number;
+  }> => {
+    const response = await api.get('/all-images');
     return response.data;
   },
 };
