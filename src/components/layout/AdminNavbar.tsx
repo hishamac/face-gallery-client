@@ -5,47 +5,61 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Home,
+  FolderOpen,
+  Image,
+  LayoutDashboard,
   Menu,
   MoreHorizontal,
-  Users,
-} from 'lucide-react';
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Button } from '../ui/button';
+  Section,
+  Users
+} from "lucide-react";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Button } from "../ui/button";
 
 const navigation = [
-    { name: 'Albums', href: '/admin/albums', icon: Home, primary: true },
-    { name: 'Sections', href: '/admin/sections', icon: Users, primary: true },
-    { name: 'Persons', href: '/admin/persons', icon: Users, primary: true },
+  { name: "Dashboard", href: "/admin", icon: LayoutDashboard, primary: true },
+  { name: "Albums", href: "/admin/albums", icon: FolderOpen, primary: true },
+  { name: "Sections", href: "/admin/sections", icon: Section, primary: true },
+  { name: "Persons", href: "/admin/persons", icon: Users, primary: true },
+  { name: "Gallery", href: "/", icon: Image, primary: true },
 ];
 
 export default function AdminNavbar() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   const isActive = (href: string) => {
-    if (href === '/') {
-      return location.pathname === '/';
+    if (href === "/") {
+      return location.pathname === "/";
+    }
+    if (href === "/admin") {
+      return location.pathname === "/admin";
     }
     return location.pathname.startsWith(href);
   };
 
-  const primaryNavItems = navigation.filter(item => item.primary);
-  const secondaryNavItems = navigation.filter(item => !item.primary);
+  const primaryNavItems = navigation.filter((item) => item.primary);
+  const secondaryNavItems = navigation.filter((item) => !item.primary);
 
-  const NavItem = ({ item, mobile = false }: { item: typeof navigation[0], mobile?: boolean }) => {
+  const NavItem = ({
+    item,
+    mobile = false,
+  }: {
+    item: (typeof navigation)[0];
+    mobile?: boolean;
+  }) => {
     const active = isActive(item.href);
     const Icon = item.icon;
-    
+
     return (
       <Link
         to={item.href}
         className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 group ${
           active
-            ? 'bg-primary text-primary-foreground shadow-sm'
-            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-        } ${mobile ? 'w-full px-4 py-3' : ''}`}
+            ? "bg-primary text-primary-foreground shadow-sm"
+            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+        } ${mobile ? "w-full px-4 py-3" : ""}`}
       >
         <Icon className="w-4 h-4" aria-hidden="true" />
         <span className="text-sm font-medium">{item.name}</span>
@@ -84,17 +98,20 @@ export default function AdminNavbar() {
         <div className="flex xl:hidden items-center space-x-1">
           {/* Very Small Mobile - Hamburger Menu */}
           <div className="flex sm:hidden">
-            <DropdownMenu open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <DropdownMenu
+              open={isMobileMenuOpen}
+              onOpenChange={setIsMobileMenuOpen}
+            >
               <DropdownMenuTrigger asChild>
                 <Button
-                variant={'outline'}
+                  variant={"outline"}
                   className="flex items-center space-x-2 px-3 py-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-300"
                 >
                   <Menu className="w-5 h-5" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="end" 
+              <DropdownMenuContent
+                align="end"
                 className="w-48 bg-card/95 backdrop-blur-xl border border-border rounded-xl mt-2 shadow-xl"
               >
                 {navigation.map((item) => {
@@ -105,9 +122,9 @@ export default function AdminNavbar() {
                       <Link
                         to={item.href}
                         className={`flex items-center space-x-3 w-full px-4 py-3 text-sm rounded-lg transition-all duration-200 ${
-                          active 
-                            ? 'text-primary bg-primary/10' 
-                            : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                          active
+                            ? "text-primary bg-primary/10"
+                            : "text-foreground hover:bg-accent hover:text-accent-foreground"
                         }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -120,28 +137,28 @@ export default function AdminNavbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           {/* Small Mobile and up - Show primary items + More dropdown */}
           <div className="hidden sm:flex items-center space-x-1">
             {/* Primary items always visible */}
             {primaryNavItems.map((item) => (
               <NavItem key={item.name} item={item} />
             ))}
-            
+
             {/* More dropdown for secondary items */}
             {secondaryNavItems.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                  variant={'outline'}
+                    variant={"outline"}
                     className="flex items-center space-x-2 px-4 py-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-300"
                   >
                     <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
                     <span className="text-sm font-medium">More</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
+                <DropdownMenuContent
+                  align="end"
                   className="w-48 bg-card/95 backdrop-blur-xl border border-border rounded-xl mt-2 shadow-xl"
                 >
                   {secondaryNavItems.map((item) => {
@@ -152,9 +169,9 @@ export default function AdminNavbar() {
                         <Link
                           to={item.href}
                           className={`flex items-center space-x-3 w-full px-4 py-3 text-sm rounded-lg transition-all duration-200 ${
-                            active 
-                              ? 'text-primary bg-primary/10' 
-                              : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                            active
+                              ? "text-primary bg-primary/10"
+                              : "text-foreground hover:bg-accent hover:text-accent-foreground"
                           }`}
                         >
                           <Icon className="w-4 h-4" aria-hidden="true" />

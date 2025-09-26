@@ -9,6 +9,7 @@ import {
   Menu,
   MoreHorizontal,
   Users,
+  Shield,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -17,6 +18,7 @@ import { Button } from '../ui/button';
 const navigation = [
   { name: 'Gallery', href: '/', icon: Home, primary: true },
   { name: 'Persons', href: '/persons', icon: Users, primary: true },
+  { name: 'Admin', href: '/admin', icon: Shield, primary: true },
 ];
 
 export default function Navbar() {
