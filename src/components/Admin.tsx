@@ -26,6 +26,7 @@ import {
   XCircle
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Admin() {
   const [multipleFiles, setMultipleFiles] = useState<File[]>([]);
@@ -102,6 +103,7 @@ export default function Admin() {
     try {
       setMultipleUploading(true);
       setMessage("");
+      setResults(null);
       const result = await faceAPI.uploadMultipleImages(
         multipleFiles,
         selectedAlbumId && selectedAlbumId !== "none"
@@ -111,10 +113,18 @@ export default function Admin() {
           ? selectedSectionId
           : undefined
       );
-      setResults(result);
-      setMessage(
-        `Upload completed: ${result.successful_uploads}/${result.total_files} files uploaded, ${result.total_faces_detected} total faces detected`
-      );
+      // Check if there are errors in the response
+      if (result.errors && result.errors.length > 0) {
+        // Show error toast if there are validation errors
+        toast.error(
+          `Upload issues: ${result.errors.join(', ')}. ${result.successful_uploads}/${result.total_files} files uploaded successfully.`
+        );
+      } else {
+        // Show success toast only if no errors
+        toast.success(
+          `Upload completed: ${result.successful_uploads}/${result.total_files} files uploaded, ${result.total_faces_detected} total faces detected`
+        );
+      }
       setMultipleFiles([]);
       // Reset the file input
       const fileInput = document.getElementById(
@@ -136,9 +146,10 @@ export default function Admin() {
     try {
       setClustering(true);
       setMessage("");
-      const result = await faceAPI.clusterFaces();
-      setResults(result);
-      setMessage(`Clustering completed successfully`);
+      setResults(null);
+      await faceAPI.clusterFaces();
+      // Show success toast instead of page message
+      toast.success(`Clustering completed successfully`);
     } catch (error: any) {
       setMessage(
         "Error during clustering: " +
