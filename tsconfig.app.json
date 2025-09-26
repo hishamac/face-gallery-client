@@ -27,7 +27,10 @@
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/components": ["./src/components"],
+      "@/lib/utils": ["./src/lib/utils"]
     }
   },
   "include": ["src"]

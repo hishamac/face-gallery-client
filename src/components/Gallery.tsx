@@ -110,26 +110,15 @@ export default function Gallery() {
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto px-4 py-8">
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Image Gallery</h1>
-        <p className="text-muted-foreground">Browse all uploaded images</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Image Gallery</h1>
+        <p className="text-gray-600">Browse all uploaded images and search for similar faces</p>
       </div>
 
-      {/* Navigation Links */}
-      <div className="flex gap-4 mb-6">
-        <Link 
-          to="/persons" 
-          className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-        >
-          View Persons
-        </Link>
-        <Link 
-          to="/admin" 
-          className="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
-        >
-          Admin Panel
-        </Link>
+      {/* Search Toggle */}
+      <div className="mb-6">
         <Button
           onClick={() => setShowSearch(!showSearch)}
           className="px-4 py-2 bg-purple-100 text-purple-700 hover:bg-purple-200"
