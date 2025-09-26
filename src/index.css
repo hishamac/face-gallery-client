@@ -68,6 +68,18 @@
   }
 }
 
+@layer components {
+  .bauhaus-card {
+    @apply bg-white rounded-lg border border-gray-200 shadow-sm;
+    transition: all 0.3s ease;
+  }
+  
+  .bauhaus-card:hover {
+    @apply shadow-xl;
+    transform: translateY(-2px);
+  }
+}
+
 a {
   font-weight: 500;
   color: #646cff;

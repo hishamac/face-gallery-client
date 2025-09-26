@@ -54,7 +54,9 @@ const ImageDetail = () => {
   const fetchAllPersons = async () => {
     try {
       const response = await faceAPI.getAllPersons();
-      setAllPersons(response.persons);
+      // Map the data structure from API response to component expectation
+      const mappedPersons = response.persons.map(p => ({ id: p.person_id, name: p.person_name }));
+      setAllPersons(mappedPersons);
     } catch (err) {
       console.error('Failed to fetch persons:', err);
       setError('Failed to load persons list');

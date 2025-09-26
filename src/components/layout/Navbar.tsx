@@ -14,7 +14,7 @@ import {
     Users
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 
 const navigation = [
   { name: 'Gallery', href: '/', icon: Home, primary: true },
@@ -63,11 +63,15 @@ export default function Navbar() {
       <div className="flex items-center justify-between space-x-6">
         {/* Logo */}
         <div className="flex items-center">
-          <Link to="/" className="h-10 w-32 flex items-center justify-start group">
-            <div className="max-h-full max-w-full object-contain object-left transition-transform group-hover:scale-105 flex items-center space-x-2">
-              <Camera className="w-8 h-8 text-primary" />
-              <div className="text-lg font-bold text-foreground">FaceGallery</div>
-            </div>
+          <Link
+            to="/"
+            className="h-10 w-32 flex items-center justify-start group"
+          >
+            <img
+              src="https://storage.festie.app/files.festie.app/60063219-c875-46e0-844f-184dcd56ff9c/1758803571399-990f33c3f11d0ceb-ei-1758803295199-removebg-preview-1.png"
+              alt="Fansat Logo"
+              className="max-h-full max-w-full object-contain object-left transition-transform group-hover:scale-105"
+            />
           </Link>
         </div>
 

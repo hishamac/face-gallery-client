@@ -79,8 +79,10 @@ const PersonDetail = () => {
   const fetchAllPersons = async () => {
     try {
       const response = await faceAPI.getAllPersons();
-      // Filter out current person from the list
-      const filteredPersons = response.persons.filter(p => p.id !== personId);
+      // Filter out current person from the list and map the data structure
+      const filteredPersons = response.persons
+        .filter(p => p.person_id !== personId)
+        .map(p => ({ id: p.person_id, name: p.person_name }));
       setAllPersons(filteredPersons);
     } catch (err) {
       console.error('Failed to fetch persons:', err);

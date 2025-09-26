@@ -140,7 +140,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Copyright */}
-        <div className="border-t pt-6 mt-8">
+        <div className="pt-6 mt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
             <p>© 2025 Festie.app All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
