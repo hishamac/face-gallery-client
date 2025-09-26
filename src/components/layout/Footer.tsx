@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -84,41 +84,52 @@ export default function Footer() {
             <h3 className="font-medium text-gray-900 mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>
-                <Link
-                  to="/results"
+                <a
+                  href="https://fansat.festie.app/results"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-primary hover:text-primary/80 transition-colors"
                 >
                   Results
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/" className="text-primary hover:text-primary/80 transition-colors">
+                <Link
+                  to="/"
+                  className="text-primary hover:text-primary/80 transition-colors"
+                >
                   Gallery
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/downloads"
+                <a
+                  href="https://fansat.festie.app/downloads"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-primary hover:text-primary/80 transition-colors"
                 >
                   Downloads
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
-                  to="/schedules"
+                <a
+                  href="https://fansat.festie.app/schedules"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-primary hover:text-primary/80 transition-colors"
                 >
                   Schedules
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
-                  to="/wall"
+                <a
+                  href="https://fansat.festie.app/wall"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-primary hover:text-primary/80 transition-colors"
                 >
                   Wall
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -127,8 +138,12 @@ export default function Footer() {
           <div>
             <h3 className="font-medium text-gray-900 mb-4">Made with</h3>
             <div className="mb-4">
-              <img src="https://fansat.festie.app/logo.svg
-" alt="FESTIE" className="h-8" />
+              <img
+                src="https://fansat.festie.app/logo.svg
+"
+                alt="FESTIE"
+                className="h-8"
+              />
             </div>
             <p className="text-sm text-gray-600 leading-relaxed mb-4">
               Manage registrations, scheduling, scoring, and results — all in
