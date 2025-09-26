@@ -1,24 +1,27 @@
-import { useState } from 'react';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-    Camera,
-    Home,
-    Menu,
-    MoreHorizontal,
-    Settings,
-    Users
+  Home,
+  Menu,
+  MoreHorizontal,
+  Settings,
+  Users,
+  FolderOpen,
+  Grid3X3
 } from 'lucide-react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '../ui/button';
 
 const navigation = [
   { name: 'Gallery', href: '/', icon: Home, primary: true },
   { name: 'Persons', href: '/persons', icon: Users, primary: true },
+  { name: 'Albums', href: '/albums', icon: FolderOpen, primary: false },
+  { name: 'Sections', href: '/sections', icon: Grid3X3, primary: false },
   { name: 'Admin', href: '/admin', icon: Settings, primary: false },
 ];
 

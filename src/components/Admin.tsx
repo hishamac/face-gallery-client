@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle } from 'lucide-react';
 import { faceAPI } from '@/services/api';
 
 export default function Admin() {
@@ -9,6 +10,8 @@ export default function Admin() {
   const [singleUploading, setSingleUploading] = useState(false);
   const [multipleUploading, setMultipleUploading] = useState(false);
   const [clustering, setClustering] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [results, setResults] = useState<any>(null);
 
@@ -84,6 +87,27 @@ export default function Admin() {
       setResults(null);
     } finally {
       setClustering(false);
+    }
+  };
+
+  const handleResetDatabase = async () => {
+    if (!showResetConfirm) {
+      setShowResetConfirm(true);
+      return;
+    }
+
+    try {
+      setResetting(true);
+      setMessage('');
+      const result = await faceAPI.resetDatabase();
+      setResults(result);
+      setMessage('Database reset successfully! All data has been cleared.');
+      setShowResetConfirm(false);
+    } catch (error: any) {
+      setMessage('Error resetting database: ' + (error.response?.data?.error || error.message));
+      setResults(null);
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -188,6 +212,55 @@ export default function Admin() {
             >
               {clustering ? 'Clustering...' : 'Run Face Clustering'}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Database Reset Section */}
+        <Card className="mt-6 border-red-200">
+          <CardHeader>
+            <CardTitle className="text-red-700 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
+              Danger Zone
+            </CardTitle>
+            <CardDescription className="text-red-600">
+              ⚠️ This action will permanently delete ALL data including persons, images, faces, albums, and sections. This cannot be undone!
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!showResetConfirm ? (
+              <Button 
+                onClick={handleResetDatabase}
+                disabled={resetting}
+                variant="destructive"
+                className="w-full"
+              >
+                Reset Database
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-red-700 font-medium">
+                  Are you absolutely sure? This will delete everything!
+                </p>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleResetDatabase}
+                    disabled={resetting}
+                    variant="destructive"
+                    className="flex-1"
+                  >
+                    {resetting ? 'Resetting...' : 'Yes, Delete Everything'}
+                  </Button>
+                  <Button 
+                    onClick={() => setShowResetConfirm(false)}
+                    variant="outline"
+                    className="flex-1"
+                    disabled={resetting}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

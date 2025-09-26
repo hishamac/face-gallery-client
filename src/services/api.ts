@@ -15,11 +15,13 @@ const api = axios.create({
 // API endpoints
 export const faceAPI = {
   // Upload an image
-  uploadImage: async (file: File): Promise<UploadResponse> => {
+  uploadImage: async (file: File, albumId?: string, sectionId?: string): Promise<UploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
+    if (albumId) formData.append('album_id', albumId);
+    if (sectionId) formData.append('section_id', sectionId);
     
-    const response = await api.post<UploadResponse>('/upload', formData, {
+    const response = await api.post<UploadResponse>('/images/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -52,7 +54,7 @@ export const faceAPI = {
     formData.append('tolerance', tolerance.toString());
     formData.append('max_results', maxResults.toString());
     
-    const response = await api.post('/search-by-image', formData, {
+    const response = await api.post('/images/search-by-image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -61,7 +63,7 @@ export const faceAPI = {
   },
 
   // Upload multiple images
-  uploadMultipleImages: async (files: File[]): Promise<{
+  uploadMultipleImages: async (files: File[], albumId?: string, sectionId?: string): Promise<{
     message: string;
     successful_uploads: number;
     total_files: number;
@@ -78,8 +80,10 @@ export const faceAPI = {
     files.forEach(file => {
       formData.append('files', file);
     });
+    if (albumId) formData.append('album_id', albumId);
+    if (sectionId) formData.append('section_id', sectionId);
     
-    const response = await api.post('/upload-multiple', formData, {
+    const response = await api.post('/images/upload-multiple', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -107,7 +111,7 @@ export const faceAPI = {
 
   // Get image URL
   getImageUrl: (filename: string): string => {
-    return `${API_BASE_URL}/images/${filename}`;
+    return `${API_BASE_URL}/images/${filename}/file`;
   },
 
   // Get cropped face URL
@@ -117,31 +121,31 @@ export const faceAPI = {
 
   // Get person details
   getPersonDetails: async (personId: string): Promise<PersonDetails> => {
-    const response = await api.get<PersonDetails>(`/person/${personId}`);
+    const response = await api.get<PersonDetails>(`/persons/${personId}`);
     return response.data;
   },
 
   // Get image details
   getImageDetails: async (imageId: string): Promise<ImageDetails> => {
-    const response = await api.get<ImageDetails>(`/image/${imageId}`);
+    const response = await api.get<ImageDetails>(`/images/${imageId}`);
     return response.data;
   },
 
   // Rename a person
   renamePerson: async (personId: string, name: string): Promise<{ message: string; person_id: string; old_name: string; new_name: string }> => {
-    const response = await api.put(`/person/${personId}/rename`, { name });
+    const response = await api.put(`/persons/${personId}/rename`, { name });
     return response.data;
   },
 
   // Move face to existing person
   moveFaceToPerson: async (faceId: string, targetPersonId: string): Promise<MoveFaceResponse> => {
-    const response = await api.put(`/face/${faceId}/move`, { target_person_id: targetPersonId });
+    const response = await api.put(`/faces/${faceId}/move`, { target_person_id: targetPersonId });
     return response.data;
   },
 
   // Move face to new person
   moveFaceToNewPerson: async (faceId: string): Promise<MoveFaceToNewPersonResponse> => {
-    const response = await api.put(`/face/${faceId}/move-to-new`);
+    const response = await api.put(`/faces/${faceId}/move-to-new`);
     return response.data;
   },
 
@@ -156,7 +160,7 @@ export const faceAPI = {
     }>; 
     total: number 
   }> => {
-    const response = await api.get('/all-persons');
+    const response = await api.get('/persons');
     return response.data;
   },
 
@@ -176,7 +180,91 @@ export const faceAPI = {
     images_with_faces: number;
     images_without_faces: number;
   }> => {
-    const response = await api.get('/all-images');
+    const response = await api.get('/images');
+    return response.data;
+  },
+
+  // Albums API
+  getAllAlbums: async (): Promise<{
+    albums: Array<{
+      album_id: string;
+      name: string;
+      description: string;
+      created_at: string;
+      image_count: number;
+    }>;
+    total: number;
+  }> => {
+    const response = await api.get('/albums');
+    return response.data;
+  },
+
+  createAlbum: async (name: string, description: string = ''): Promise<{
+    message: string;
+    album: {
+      album_id: string;
+      name: string;
+      description: string;
+      created_at: string;
+    };
+  }> => {
+    const response = await api.post('/albums', { name, description });
+    return response.data;
+  },
+
+  updateAlbum: async (albumId: string, name: string, description: string = ''): Promise<{
+    message: string;
+  }> => {
+    const response = await api.put(`/albums/${albumId}`, { name, description });
+    return response.data;
+  },
+
+  deleteAlbum: async (albumId: string): Promise<{
+    message: string;
+  }> => {
+    const response = await api.delete(`/albums/${albumId}`);
+    return response.data;
+  },
+
+  // Sections API
+  getAllSections: async (): Promise<{
+    sections: Array<{
+      section_id: string;
+      name: string;
+      description: string;
+      created_at: string;
+      image_count: number;
+    }>;
+    total: number;
+  }> => {
+    const response = await api.get('/sections');
+    return response.data;
+  },
+
+  createSection: async (name: string, description: string = ''): Promise<{
+    message: string;
+    section: {
+      section_id: string;
+      name: string;
+      description: string;
+      created_at: string;
+    };
+  }> => {
+    const response = await api.post('/sections', { name, description });
+    return response.data;
+  },
+
+  updateSection: async (sectionId: string, name: string, description: string = ''): Promise<{
+    message: string;
+  }> => {
+    const response = await api.put(`/sections/${sectionId}`, { name, description });
+    return response.data;
+  },
+
+  deleteSection: async (sectionId: string): Promise<{
+    message: string;
+  }> => {
+    const response = await api.delete(`/sections/${sectionId}`);
     return response.data;
   },
 };

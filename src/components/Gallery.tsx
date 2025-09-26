@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { faceAPI } from "@/services/api";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -15,15 +14,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Search,
   Tag,
   Album,
   ChevronDown,
   Image as ImageIcon,
-  Funnel,
   Upload,
 } from "lucide-react";
-import type { ImageSummary, Stats } from "@/types/api";
+import type { ImageSummary } from "@/types/api";
 
 interface SearchMatch {
   face_id: string;
@@ -40,27 +37,30 @@ interface SearchMatch {
   cropped_face_filename?: string;
 }
 
-// Mock data for sections and albums (replace with your actual data)
-const sections = [
-  "All Sections",
-  "ALIYA",
-  "BIDAYA MLM",
-  "BIDAYA URD",
-  "KULLIYA",
-  "THANAWIYA",
-  "THANIYA ALIM",
-];
-const albums = ["All Albums", "DAY -1", "NON STAGE"];
-
 export default function Gallery() {
   const [images, setImages] = useState<ImageSummary[]>([]);
   const [displayImages, setDisplayImages] = useState<ImageSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
-  const [stats, setStats] = useState<Stats | null>(null);
+
+  // Albums and sections state
+  const [sections, setSections] = useState<Array<{
+    section_id: string;
+    name: string;
+    description: string;
+    created_at: string;
+    image_count: number;
+  }>>([]);
+  const [albums, setAlbums] = useState<Array<{
+    album_id: string;
+    name: string;
+    description: string;
+    created_at: string;
+    image_count: number;
+  }>>([]);
 
   // Search state
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm] = useState("");
   const [selectedSection, setSelectedSection] = useState("All Sections");
   const [selectedAlbum, setSelectedAlbum] = useState("All Albums");
 
@@ -74,7 +74,8 @@ export default function Gallery() {
 
   useEffect(() => {
     fetchImages();
-    fetchStats();
+    fetchAlbums();
+    fetchSections();
   }, []);
 
   useEffect(() => {
@@ -94,12 +95,21 @@ export default function Gallery() {
     }
   };
 
-  const fetchStats = async () => {
+  const fetchAlbums = async () => {
     try {
-      const data = await faceAPI.getStats();
-      setStats(data);
+      const data = await faceAPI.getAllAlbums();
+      setAlbums(data.albums);
     } catch (err) {
-      console.error("Failed to fetch stats:", err);
+      console.error("Failed to fetch albums:", err);
+    }
+  };
+
+  const fetchSections = async () => {
+    try {
+      const data = await faceAPI.getAllSections();
+      setSections(data.sections);
+    } catch (err) {
+      console.error("Failed to fetch sections:", err);
     }
   };
 
@@ -297,15 +307,23 @@ export default function Gallery() {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
+                      <DropdownMenuItem
+                        onClick={() => setSelectedSection("All Sections")}
+                        className={
+                          selectedSection === "All Sections" ? "bg-accent" : ""
+                        }
+                      >
+                        All Sections
+                      </DropdownMenuItem>
                       {sections.map((section) => (
                         <DropdownMenuItem
-                          key={section}
-                          onClick={() => setSelectedSection(section)}
+                          key={section.section_id}
+                          onClick={() => setSelectedSection(section.name)}
                           className={
-                            selectedSection === section ? "bg-accent" : ""
+                            selectedSection === section.name ? "bg-accent" : ""
                           }
                         >
-                          {section}
+                          {section.name} ({section.image_count})
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
@@ -323,13 +341,19 @@ export default function Gallery() {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
+                      <DropdownMenuItem
+                        onClick={() => setSelectedAlbum("All Albums")}
+                        className={selectedAlbum === "All Albums" ? "bg-accent" : ""}
+                      >
+                        All Albums
+                      </DropdownMenuItem>
                       {albums.map((album) => (
                         <DropdownMenuItem
-                          key={album}
-                          onClick={() => setSelectedAlbum(album)}
-                          className={selectedAlbum === album ? "bg-accent" : ""}
+                          key={album.album_id}
+                          onClick={() => setSelectedAlbum(album.name)}
+                          className={selectedAlbum === album.name ? "bg-accent" : ""}
                         >
-                          {album}
+                          {album.name} ({album.image_count})
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
