@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { faceAPI } from '@/services/api';
 import { toast } from 'sonner';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 interface Album {
   album_id: string;
@@ -18,6 +19,8 @@ interface Album {
 }
 
 export default function Albums() {
+  usePageTitle("Albums");
+  
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
   const [createLoading, setCreateLoading] = useState(false);

@@ -1,27 +1,24 @@
-# Face Clustering React Client
+# Fansat - Face Recognition Client
 
-A modern React TypeScript application for intelligent face clustering and management. This client provides an intuitive interface to upload images, automatically detect and cluster faces, and manually manage person assignments.
-
-# Face Gallery Client
-
-A modern React TypeScript application for intelligent face clustering and gallery management. This client provides an intuitive interface to upload images, automatically detect and cluster faces, and manually manage person assignments with comprehensive album and section organization.
+A modern React TypeScript application for intelligent face clustering and gallery management. This client provides an intuitive interface for the Fansat face recognition system with comprehensive album and section organization, dynamic page titles, and real-time progress tracking.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **Batch Image Upload**: Upload multiple images simultaneously with drag-and-drop support
-- **Smart Face Detection**: Automatic face detection and extraction from uploaded images
-- **Intelligent Face Clustering**: Uses advanced face recognition algorithms to group similar faces
-- **Real-time Processing**: Live progress indicators for upload and processing operations
-- **Face Search by Image**: Upload an image to find similar faces across your entire gallery
+- **Batch Image Upload**: Upload multiple images simultaneously with drag-and-drop support and real-time progress
+- **Smart Face Detection**: Automatic face detection and extraction from uploaded images using base64 storage
+- **Intelligent Face Clustering**: Advanced face recognition algorithms to group similar faces automatically
+- **Upload Progress Tracking**: Real-time upload progress indicators with percentage and file-by-file status
+- **Face Search by Image**: Upload an image to find similar faces across your entire gallery with confidence scores
+- **File Validation**: Client-side file size and type validation with user-friendly error messages
 
 ### Advanced Person Management
-- **Person Detail Pages**: Comprehensive view of all faces and images for each person
+- **Person Detail Pages**: Comprehensive view of all faces and images for each person with dynamic page titles
 - **Manual Face Assignment**: Move faces between persons or create new persons when clustering is incorrect
-- **Person Renaming**: Rename persons with custom names (preserved during reclustering)  
+- **Person Renaming**: Rename persons with custom names (preserved during reclustering) with real-time updates
 - **Protected Manual Assignments**: Manual face assignments are protected from automatic reclustering
 - **Auto-cleanup**: Empty persons are automatically deleted when their last face is moved
-- **Person Thumbnails**: First detected face serves as person thumbnail
+- **Person Thumbnails**: First detected face serves as person thumbnail with fallback handling
 
 ### Gallery Organization
 - **Album Management**: Create, edit, and delete albums for organizing images
@@ -31,19 +28,22 @@ A modern React TypeScript application for intelligent face clustering and galler
 - **Image Gallery Views**: Browse all images with face detection information and metadata
 
 ### User Interface
-- **Dual Layout System**: Separate user and admin layouts for different workflows
-- **Image Detail Pages**: View all detected faces in each image with person assignments
-- **Interactive Face Management**: Click-to-move faces with intuitive modal dialogs
-- **Responsive Design**: Modern UI built with Tailwind CSS and shadcn/ui components
-- **Real-time Statistics**: Live counts of images, faces, persons, albums, and sections
-- **Toast Notifications**: User feedback for all operations with success/error states
+- **Dynamic Page Titles**: Context-aware page titles (e.g., "Fansat | Gallery", "Fansat | Person Name")
+- **Dual Layout System**: Separate user and admin layouts for different workflows with navigation
+- **Image Detail Pages**: View all detected faces in each image with person assignments and metadata
+- **Interactive Face Management**: Click-to-move faces with intuitive modal dialogs and confirmations
+- **Responsive Design**: Modern UI built with Tailwind CSS and shadcn/ui components for all screen sizes
+- **Real-time Statistics**: Live counts of images, faces, persons, albums, and sections with auto-refresh
+- **Toast Notifications**: User feedback for all operations with success/error states and timeouts
+- **Loading States**: Comprehensive loading indicators and skeleton screens for better UX
 
 ### Admin Features
-- **Admin Dashboard**: Comprehensive administrative interface for system management
-- **Batch Operations**: Upload multiple images with album/section assignment
-- **Database Statistics**: Real-time stats on gallery contents and processing metrics
-- **System Reset**: Complete database cleanup functionality (with confirmation)
+- **Admin Dashboard**: Comprehensive administrative interface for system management with statistics
+- **Batch Operations**: Upload multiple images with album/section assignment and progress tracking
+- **Database Statistics**: Real-time stats on gallery contents and processing metrics with refresh
+- **System Reset**: Complete database cleanup functionality (with confirmation dialogs)
 - **Clustering Controls**: Trigger re-clustering while preserving manual assignments
+- **Upload Management**: Advanced upload controls with file size validation and error handling
 
 ## 🛠 Tech Stack
 
@@ -53,7 +53,7 @@ A modern React TypeScript application for intelligent face clustering and galler
 - **React Router** - Client-side routing for SPA navigation with nested routes
 - **Tailwind CSS** - Utility-first CSS framework for rapid UI development
 - **shadcn/ui** - Beautiful and accessible UI components built on Radix UI
-- **Axios** - HTTP client for API communication with request/response interceptors
+- **Axios** - HTTP client for API communication with request/response interceptors and timeout handling
 - **Sonner** - Modern toast notifications for user feedback
 - **Lucide React** - Beautiful and consistent icon library
 
@@ -76,10 +76,12 @@ client/
 │   │   └── api.ts           # API service layer with all endpoints
 │   ├── types/
 │   │   └── api.ts           # TypeScript type definitions
+│   ├── hooks/
+│   │   └── usePageTitle.ts  # Dynamic page title management hook
 │   ├── lib/
 │   │   └── utils.ts         # Utility functions and helpers
 │   └── App.tsx              # Main app with routing and layout selection
-├── public/                  # Static assets and favicon
+├── public/                  # Static assets, favicon, and app icons
 ├── components.json          # shadcn/ui configuration
 ├── tailwind.config.ts       # Tailwind CSS configuration
 ├── tsconfig.json           # TypeScript configuration
@@ -102,9 +104,12 @@ npm install
 ```
 
 2. **Configure API endpoint**:
-The client is configured to connect to `http://localhost:5000` by default. Update `src/services/api.ts` if your API runs on a different port.
+The client is configured to connect to `http://localhost:5000` by default. Update the `VITE_API_BASE_URL` environment variable or `src/services/api.ts` if your API runs on a different endpoint.
 
-3. **Start development server**:
+3. **Set up favicon**:
+Save your logo as `favicon.png` in the `public/` directory to replace the default favicon.
+
+4. **Start development server**:
 ```bash
 npm run dev
 ```
@@ -190,10 +195,28 @@ Navigate to `http://localhost:5173`
 ## 🔧 Configuration
 
 ### API Configuration
-Update the API base URL in `src/services/api.ts`:
-```typescript
-const API_BASE_URL = 'http://localhost:5000';
+Update the API base URL using environment variables:
+
+Create a `.env.local` file:
+```bash
+VITE_API_BASE_URL=http://localhost:5000
+VITE_APP_TITLE=Fansat
+VITE_MAX_UPLOAD_SIZE=16777216
 ```
+
+Or update directly in `src/services/api.ts`:
+```typescript
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+```
+
+### Dynamic Page Titles
+Page titles are automatically managed by the `usePageTitle` hook:
+- **Gallery**: "Fansat | Gallery"
+- **Admin**: "Fansat | Admin"
+- **Persons**: "Fansat | Persons" or "Fansat | Persons - Admin"
+- **Person Details**: "Fansat | [Person Name]"
+- **Albums**: "Fansat | Albums - Admin"
+- **Sections**: "Fansat | Sections - Admin"
 
 ### Styling
 The app uses Tailwind CSS with shadcn/ui components. Customize styles in:
@@ -214,8 +237,9 @@ The built files will be in the `dist/` directory, ready for deployment to any st
 Create a `.env.local` file for environment-specific settings:
 ```bash
 VITE_API_BASE_URL=https://your-api-domain.com
-VITE_APP_TITLE=Face Gallery
+VITE_APP_TITLE=Fansat
 VITE_MAX_UPLOAD_SIZE=16777216
+VITE_UPLOAD_TIMEOUT=300000
 ```
 
 ### Deployment Options
@@ -256,10 +280,11 @@ RewriteRule . /index.html [L]
 ```
 
 ### Performance Optimization
-- **Code Splitting**: Automatic route-based code splitting
+- **Code Splitting**: Automatic route-based code splitting with React.lazy
 - **Tree Shaking**: Unused code elimination in production builds
-- **Asset Optimization**: Image and CSS optimization
+- **Asset Optimization**: Image and CSS optimization with Vite
 - **Caching Strategy**: Proper cache headers for static assets
+- **Upload Optimization**: Client-side file validation and progress tracking
 
 ## 🤝 API Integration
 
@@ -299,10 +324,11 @@ The client communicates with the Face Clustering API through these endpoints:
 - `DELETE /reset` - Reset entire database (admin only)
 
 ### API Service Features
-- **Request Timeouts**: 30-second timeout for upload operations
+- **Request Timeouts**: Extended timeouts for upload operations (3 minutes single, 5 minutes multiple)
+- **Upload Progress**: Real-time progress tracking with onUploadProgress callbacks
 - **Error Handling**: Comprehensive error catching with user-friendly messages
 - **Type Safety**: Full TypeScript integration with API response types
-- **URL Helpers**: Utility functions for image and face URL generation
+- **URL Helpers**: Utility functions for image and face URL generation using IDs
 
 ## 📝 TypeScript Support
 

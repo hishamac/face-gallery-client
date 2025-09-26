@@ -6,6 +6,7 @@ import { Eye, Image as ImageIcon, Search, User, Users, Edit2, Check, X } from "l
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 interface Person {
   person_id: string;
@@ -23,6 +24,9 @@ interface PersonsData {
 export default function Persons() {
   const location = useLocation();
   const isAdminRoute = location.pathname === '/admin/persons';
+  
+  // Set page title based on route
+  usePageTitle(isAdminRoute ? "Persons - Admin" : "Persons");
   
   const [personsData, setPersonsData] = useState<PersonsData | null>(null);
   const [filteredPersons, setFilteredPersons] = useState<Person[]>([]);
@@ -87,14 +91,14 @@ export default function Persons() {
 
     try {
       setUpdating(personId);
-      // TODO: Add API call to update person name
-      // await faceAPI.updatePersonName(personId, editingName);
+      // Make API call to update person name
+      await faceAPI.renamePerson(personId, editingName.trim());
       
       // Update local state
       if (personsData) {
         const updatedPersons = personsData.persons.map(person => 
           person.person_id === personId 
-            ? { ...person, person_name: editingName }
+            ? { ...person, person_name: editingName.trim() }
             : person
         );
         setPersonsData({ ...personsData, persons: updatedPersons });
@@ -103,9 +107,10 @@ export default function Persons() {
       setEditingPersonId(null);
       setEditingName("");
       toast.success("Person name updated successfully");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to update person name:", err);
-      toast.error("Failed to update person name");
+      const errorMessage = err.response?.data?.error || err.message || "Failed to update person name";
+      toast.error(errorMessage);
     } finally {
       setUpdating(null);
     }

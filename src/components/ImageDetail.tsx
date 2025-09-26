@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, Move } from 'lucide-react';
 import { faceAPI } from '@/services/api';
 import type { ImageDetails } from '@/types/api';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const ImageDetail = () => {
   const { imageId } = useParams<{ imageId: string }>();
@@ -12,6 +13,10 @@ const ImageDetail = () => {
   const [imageData, setImageData] = useState<ImageDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Set page title dynamically based on image filename
+  usePageTitle(imageData ? imageData.filename : "Image Details");
+  
   const [selectedFace, setSelectedFace] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -263,7 +268,7 @@ const ImageDetail = () => {
             <div className="relative inline-block w-full">
               <img
                 ref={imageRef}
-                src={faceAPI.getImageUrl(imageData.filename)}
+                src={faceAPI.getImageUrl(imageData.image_id)}
                 alt={imageData.filename}
                 className="w-full h-auto rounded-xl shadow-lg"
                 onLoad={() => setImageLoaded(true)}
@@ -304,17 +309,15 @@ const ImageDetail = () => {
               {imageData.faces.map((face, index) => (
                 <div key={face.face_id} className="group relative">
                   <div className="aspect-square bg-gray-200 rounded-xl overflow-hidden shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
-                    {face.cropped_face_filename && (
-                      <img
-                        src={faceAPI.getFaceUrl(face.cropped_face_filename)}
-                        alt={`Face ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ci8+CjxwYXRoIGQ9Ik01MCA2NS41QzU4LjI4NDMgNjUuNSA2NSA1OC43ODQzIDY1IDUwLjVDNjUgNDIuMjE1NyA1OC4yODQzIDM1LjUgNTAgMzUuNUM0MS43MTU3IDM1LjUgMzUgNDIuMjE1NyAzNSA1MC41QzM1IDU4Ljc4NDMgNDEuNzE1NyA2NS41IDUwIDY1LjVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
-                        }}
-                      />
-                    )}
+                    <img
+                      src={faceAPI.getFaceUrl(face.face_id)}
+                      alt={`Face ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ci8+CjxwYXRoIGQ9Ik01MCA2NS41QzU4LjI4NDMgNjUuNSA2NSA1OC43ODQzIDY1IDUwLjVDNjUgNDIuMjE1NyA1OC4yODQzIDM1LjUgNTAgMzUuNUM0MS43MTU3IDM1LjUgMzUgNDIuMjE1NyAzNSA1MC41QzM1IDU4Ljc4NDMgNDEuNzE1NyA2NS41IDUwIDY1LjVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
+                      }}
+                    />
                   </div>
                   
                   {/* Action buttons */}

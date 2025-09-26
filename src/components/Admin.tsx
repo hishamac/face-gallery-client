@@ -27,10 +27,14 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function Admin() {
+  usePageTitle("Admin");
+  
   const [multipleFiles, setMultipleFiles] = useState<File[]>([]);
   const [multipleUploading, setMultipleUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [clustering, setClustering] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -99,8 +103,28 @@ export default function Admin() {
       return;
     }
 
+    // Validate file sizes (16MB limit)
+    const maxSize = 16 * 1024 * 1024; // 16MB
+    const oversizedFiles = multipleFiles.filter(file => file.size > maxSize);
+    
+    if (oversizedFiles.length > 0) {
+      toast.error(`Some files are too large. Maximum size is 16MB. Oversized files: ${oversizedFiles.map(f => f.name).join(', ')}`);
+      return;
+    }
+
+    // Check total upload size
+    const totalSize = multipleFiles.reduce((sum, file) => sum + file.size, 0);
+    const maxTotalSize = 100 * 1024 * 1024; // 100MB total limit
+    
+    if (totalSize > maxTotalSize) {
+      toast.error(`Total upload size too large. Maximum total size is 100MB. Current total: ${(totalSize / 1024 / 1024).toFixed(1)}MB`);
+      return;
+    }
+
     try {
       setMultipleUploading(true);
+      setUploadProgress(0);
+      
       const result = await faceAPI.uploadMultipleImages(
         multipleFiles,
         selectedAlbumId && selectedAlbumId !== "none"
@@ -108,7 +132,13 @@ export default function Admin() {
           : undefined,
         selectedSectionId && selectedSectionId !== "none"
           ? selectedSectionId
-          : undefined
+          : undefined,
+        (progressEvent) => {
+          const progress = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(progress);
+        }
       );
       // Check if there are errors in the response
       if (result.errors && result.errors.length > 0) {
@@ -123,6 +153,7 @@ export default function Admin() {
         );
       }
       setMultipleFiles([]);
+      setUploadProgress(0);
       // Reset the file input
       const fileInput = document.getElementById(
         "multiple-files"
@@ -135,6 +166,7 @@ export default function Admin() {
       );
     } finally {
       setMultipleUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -447,9 +479,9 @@ export default function Admin() {
                 className="w-full py-6 text-lg"
               >
                 {multipleUploading ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Uploading {multipleFiles.length} files...
+                    <span>Uploading {multipleFiles.length} files... ({uploadProgress}%)</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
@@ -459,6 +491,20 @@ export default function Admin() {
                   </div>
                 )}
               </Button>
+              
+              {multipleUploading && (
+                <div className="space-y-2">
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Upload progress: {uploadProgress}%
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, Move } from 'lucide-react';
 import { faceAPI } from '@/services/api';
 import type { PersonDetails } from '@/types/api';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const PersonDetail = () => {
   const { personId } = useParams<{ personId: string }>();
@@ -12,6 +13,10 @@ const PersonDetail = () => {
   const [person, setPerson] = useState<PersonDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Set page title dynamically based on person name
+  usePageTitle(person ? person.person_name : "Person Details");
+  
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState('');
   const [renameLoading, setRenameLoading] = useState(false);
@@ -326,7 +331,7 @@ const PersonDetail = () => {
                   <div className="aspect-square bg-gray-200 rounded-xl overflow-hidden shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
                     {face.cropped_face_filename && (
                       <img
-                        src={faceAPI.getFaceUrl(face.cropped_face_filename)}
+                        src={faceAPI.getFaceUrl(face.face_id)}
                         alt="Cropped face"
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -381,7 +386,7 @@ const PersonDetail = () => {
                     <Link to={`/image/${image.image_id}`}>
                       <div className="relative overflow-hidden">
                         <img
-                          src={faceAPI.getImageUrl(image.filename)}
+                          src={faceAPI.getImageUrl(image.image_id)}
                           alt={image.filename}
                           className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                           onError={(e) => {

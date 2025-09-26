@@ -6,7 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 seconds timeout for uploads
+  timeout: 120000, // 2 minutes timeout for large file uploads
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,6 +25,7 @@ export const faceAPI = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 180000, // 3 minutes for single file upload
     });
     
     return response.data;
@@ -63,7 +64,12 @@ export const faceAPI = {
   },
 
   // Upload multiple images
-  uploadMultipleImages: async (files: File[], albumId?: string, sectionId?: string): Promise<{
+  uploadMultipleImages: async (
+    files: File[], 
+    albumId?: string, 
+    sectionId?: string,
+    onUploadProgress?: (progressEvent: any) => void
+  ): Promise<{
     message: string;
     successful_uploads: number;
     total_files: number;
@@ -87,6 +93,8 @@ export const faceAPI = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 300000, // 5 minutes for multiple file uploads
+      onUploadProgress,
     });
     return response.data;
   },
@@ -109,14 +117,14 @@ export const faceAPI = {
     return response.data;
   },
 
-  // Get image URL
-  getImageUrl: (filename: string): string => {
-    return `${API_BASE_URL}/images/${filename}/file`;
+  // Get image URL by image ID
+  getImageUrl: (imageId: string): string => {
+    return `${API_BASE_URL}/images/${imageId}/file`;
   },
 
-  // Get cropped face URL
-  getFaceUrl: (filename: string): string => {
-    return `${API_BASE_URL}/faces/${filename}`;
+  // Get cropped face URL by face ID
+  getFaceUrl: (faceId: string): string => {
+    return `${API_BASE_URL}/faces/${faceId}`;
   },
 
   // Get person details 
@@ -169,7 +177,7 @@ export const faceAPI = {
     images: Array<{
       image_id: string;
       filename: string;
-      file_path: string;
+      mime_type: string;
       faces_count: number;
       persons_count: number;
       persons: Array<{ person_id: string; person_name: string }>;

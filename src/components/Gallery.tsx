@@ -23,6 +23,7 @@ import {
   Filter,
 } from "lucide-react";
 import type { ImageSummary } from "@/types/api";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 interface SearchMatch {
   face_id: string;
@@ -40,6 +41,8 @@ interface SearchMatch {
 }
 
 export default function Gallery() {
+  usePageTitle("Gallery");
+  
   const [images, setImages] = useState<ImageSummary[]>([]);
   const [displayImages, setDisplayImages] = useState<ImageSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -518,7 +521,7 @@ export default function Gallery() {
                       alt={image.filename}
                       loading="lazy"
                       className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
-                      src={faceAPI.getImageUrl(image.filename)}
+                      src={faceAPI.getImageUrl(image.image_id)}
                       style={{ color: "transparent" }}
                     />
                     <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

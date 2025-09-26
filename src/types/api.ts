@@ -37,14 +37,14 @@ export interface PersonDetails {
   images: {
     image_id: string;
     filename: string;
-    file_path: string;
+    mime_type: string;
   }[];
 }
 
 export interface ImageDetails {
   image_id: string;
   filename: string;
-  file_path: string;
+  mime_type: string;
   total_faces: number;
   faces: {
     face_id: string;
@@ -69,8 +69,8 @@ export interface Gallery {
 
 export interface UploadResponse {
   message: string;
-  file_path: string;
   filename: string;
+  mime_type: string;
   faces_detected: number;
   image_id: string;
 }
@@ -92,9 +92,22 @@ export interface Stats {
 export interface ImageSummary {
   image_id: string;
   filename: string;
-  file_path: string;
+  mime_type: string;
   faces_count: number;
   persons_count: number;
+  persons: Array<{
+    person_id: string;
+    person_name: string;
+  }>;
+  has_faces: boolean;
+  album?: {
+    album_id: string;
+    album_name: string;
+  };
+  section?: {
+    section_id: string;
+    section_name: string;
+  };
   upload_date?: string;
 }
 

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { faceAPI } from '@/services/api';
 import { toast } from 'sonner';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 interface Section {
   section_id: string;
@@ -18,6 +19,8 @@ interface Section {
 }
 
 export default function Sections() {
+  usePageTitle("Sections");
+  
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [createLoading, setCreateLoading] = useState(false);
