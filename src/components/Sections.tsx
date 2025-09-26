@@ -20,9 +20,14 @@ interface Section {
 export default function Sections() {
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<Section | null>(null);
+  const [deletingSection, setDeletingSection] = useState<Section | null>(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
 
   const loadSections = async () => {
@@ -48,6 +53,7 @@ export default function Sections() {
     }
 
     try {
+      setCreateLoading(true);
       await faceAPI.createSection(formData.name, formData.description);
       toast.success('Section created successfully');
       setIsCreateDialogOpen(false);
@@ -56,6 +62,8 @@ export default function Sections() {
     } catch (error: any) {
       console.error('Failed to create section:', error);
       toast.error(error.response?.data?.error || 'Failed to create section');
+    } finally {
+      setCreateLoading(false);
     }
   };
 
@@ -66,6 +74,7 @@ export default function Sections() {
     }
 
     try {
+      setEditLoading(true);
       await faceAPI.updateSection(editingSection.section_id, formData.name, formData.description);
       toast.success('Section updated successfully');
       setIsEditDialogOpen(false);
@@ -75,21 +84,31 @@ export default function Sections() {
     } catch (error: any) {
       console.error('Failed to update section:', error);
       toast.error(error.response?.data?.error || 'Failed to update section');
+    } finally {
+      setEditLoading(false);
     }
   };
 
   const handleDeleteSection = async (section: Section) => {
-    if (!confirm(`Are you sure you want to delete "${section.name}"? This action cannot be undone.`)) {
-      return;
-    }
+    setDeletingSection(section);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteSection = async () => {
+    if (!deletingSection) return;
 
     try {
-      await faceAPI.deleteSection(section.section_id);
+      setDeleteLoading(true);
+      await faceAPI.deleteSection(deletingSection.section_id);
       toast.success('Section deleted successfully');
+      setIsDeleteDialogOpen(false);
+      setDeletingSection(null);
       loadSections();
     } catch (error: any) {
       console.error('Failed to delete section:', error);
       toast.error(error.response?.data?.error || 'Failed to delete section');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -147,7 +166,7 @@ export default function Sections() {
                   Create Section
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="[&>button]:hidden">
                 <DialogHeader>
                   <DialogTitle>Create New Section</DialogTitle>
                 </DialogHeader>
@@ -172,10 +191,15 @@ export default function Sections() {
                     />
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => {
+                      setIsCreateDialogOpen(false);
+                      setFormData({ name: '', description: '' });
+                    }} disabled={createLoading}>
                       Cancel
                     </Button>
-                    <Button onClick={handleCreateSection}>Create Section</Button>
+                    <Button onClick={handleCreateSection} disabled={createLoading}>
+                      {createLoading ? 'Creating...' : 'Create Section'}
+                    </Button>
                   </div>
                 </div>
               </DialogContent>
@@ -199,19 +223,18 @@ export default function Sections() {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span className="truncate">{section.name}</span>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => openEditDialog(section)}
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="w-4 h-4 text-muted-foreground" />
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteSection(section)}
-                          className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -244,7 +267,7 @@ export default function Sections() {
 
           {/* Edit Dialog */}
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent>
+            <DialogContent className="[&>button]:hidden">
               <DialogHeader>
                 <DialogTitle>Edit Section</DialogTitle>
               </DialogHeader>
@@ -269,10 +292,41 @@ export default function Sections() {
                   />
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  <Button variant="outline" onClick={() => {
+                    setIsEditDialogOpen(false);
+                    setEditingSection(null);
+                    setFormData({ name: '', description: '' });
+                  }} disabled={editLoading}>
                     Cancel
                   </Button>
-                  <Button onClick={handleEditSection}>Update Section</Button>
+                  <Button onClick={handleEditSection} disabled={editLoading}>
+                    {editLoading ? 'Updating...' : 'Update Section'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <DialogContent className="[&>button]:hidden">
+              <DialogHeader>
+                <DialogTitle>Delete Section</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Are you sure you want to delete "{deletingSection?.name}"? This action cannot be undone and will remove all associated data.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => {
+                    setIsDeleteDialogOpen(false);
+                    setDeletingSection(null);
+                  }} disabled={deleteLoading}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={confirmDeleteSection} disabled={deleteLoading}>
+                    {deleteLoading ? 'Deleting...' : 'Delete Section'}
+                  </Button>
                 </div>
               </div>
             </DialogContent>

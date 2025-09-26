@@ -20,9 +20,14 @@ interface Album {
 export default function Albums() {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingAlbum, setEditingAlbum] = useState<Album | null>(null);
+  const [deletingAlbum, setDeletingAlbum] = useState<Album | null>(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
 
   const loadAlbums = async () => {
@@ -48,6 +53,7 @@ export default function Albums() {
     }
 
     try {
+      setCreateLoading(true);
       await faceAPI.createAlbum(formData.name, formData.description);
       toast.success('Album created successfully');
       setIsCreateDialogOpen(false);
@@ -56,6 +62,8 @@ export default function Albums() {
     } catch (error: any) {
       console.error('Failed to create album:', error);
       toast.error(error.response?.data?.error || 'Failed to create album');
+    } finally {
+      setCreateLoading(false);
     }
   };
 
@@ -66,6 +74,7 @@ export default function Albums() {
     }
 
     try {
+      setEditLoading(true);
       await faceAPI.updateAlbum(editingAlbum.album_id, formData.name, formData.description);
       toast.success('Album updated successfully');
       setIsEditDialogOpen(false);
@@ -75,21 +84,31 @@ export default function Albums() {
     } catch (error: any) {
       console.error('Failed to update album:', error);
       toast.error(error.response?.data?.error || 'Failed to update album');
+    } finally {
+      setEditLoading(false);
     }
   };
 
   const handleDeleteAlbum = async (album: Album) => {
-    if (!confirm(`Are you sure you want to delete "${album.name}"? This action cannot be undone.`)) {
-      return;
-    }
+    setDeletingAlbum(album);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteAlbum = async () => {
+    if (!deletingAlbum) return;
 
     try {
-      await faceAPI.deleteAlbum(album.album_id);
+      setDeleteLoading(true);
+      await faceAPI.deleteAlbum(deletingAlbum.album_id);
       toast.success('Album deleted successfully');
+      setIsDeleteDialogOpen(false);
+      setDeletingAlbum(null);
       loadAlbums();
     } catch (error: any) {
       console.error('Failed to delete album:', error);
       toast.error(error.response?.data?.error || 'Failed to delete album');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -147,7 +166,7 @@ export default function Albums() {
                   Create Album
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="[&>button]:hidden">
                 <DialogHeader>
                   <DialogTitle>Create New Album</DialogTitle>
                 </DialogHeader>
@@ -172,10 +191,15 @@ export default function Albums() {
                     />
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => {
+                      setIsCreateDialogOpen(false);
+                      setFormData({ name: '', description: '' });
+                    }} disabled={createLoading}>
                       Cancel
                     </Button>
-                    <Button onClick={handleCreateAlbum}>Create Album</Button>
+                    <Button onClick={handleCreateAlbum} disabled={createLoading}>
+                      {createLoading ? 'Creating...' : 'Create Album'}
+                    </Button>
                   </div>
                 </div>
               </DialogContent>
@@ -199,19 +223,18 @@ export default function Albums() {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span className="truncate">{album.name}</span>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => openEditDialog(album)}
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="w-4 h-4 text-muted-foreground" />
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteAlbum(album)}
-                          className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -244,7 +267,7 @@ export default function Albums() {
 
           {/* Edit Dialog */}
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent>
+            <DialogContent className="[&>button]:hidden">
               <DialogHeader>
                 <DialogTitle>Edit Album</DialogTitle>
               </DialogHeader>
@@ -269,10 +292,41 @@ export default function Albums() {
                   />
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  <Button variant="outline" onClick={() => {
+                    setIsEditDialogOpen(false);
+                    setEditingAlbum(null);
+                    setFormData({ name: '', description: '' });
+                  }} disabled={editLoading}>
                     Cancel
                   </Button>
-                  <Button onClick={handleEditAlbum}>Update Album</Button>
+                  <Button onClick={handleEditAlbum} disabled={editLoading}>
+                    {editLoading ? 'Updating...' : 'Update Album'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <DialogContent className="[&>button]:hidden">
+              <DialogHeader>
+                <DialogTitle>Delete Album</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Are you sure you want to delete "{deletingAlbum?.name}"? This action cannot be undone and will remove all associated data.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => {
+                    setIsDeleteDialogOpen(false);
+                    setDeletingAlbum(null);
+                  }} disabled={deleteLoading}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={confirmDeleteAlbum} disabled={deleteLoading}>
+                    {deleteLoading ? 'Deleting...' : 'Delete Album'}
+                  </Button>
                 </div>
               </div>
             </DialogContent>
