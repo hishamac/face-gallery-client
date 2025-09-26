@@ -119,7 +119,7 @@ export const faceAPI = {
     return `${API_BASE_URL}/faces/${filename}`;
   },
 
-  // Get person details
+  // Get person details 
   getPersonDetails: async (personId: string): Promise<PersonDetails> => {
     const response = await api.get<PersonDetails>(`/persons/${personId}`);
     return response.data;
@@ -208,7 +208,7 @@ export const faceAPI = {
       created_at: string;
     };
   }> => {
-    const response = await api.post('/albums', { name, description });
+    const response = await api.post('/albums/', { name, description });
     return response.data;
   },
 
@@ -250,7 +250,7 @@ export const faceAPI = {
       created_at: string;
     };
   }> => {
-    const response = await api.post('/sections', { name, description });
+    const response = await api.post('/sections/', { name, description });
     return response.data;
   },
 

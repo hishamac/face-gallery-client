@@ -1,6 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { AlertTriangle } from 'lucide-react';
 import { faceAPI } from '@/services/api';
 
@@ -14,6 +21,47 @@ export default function Admin() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [results, setResults] = useState<any>(null);
+
+  // Album and Section state
+  const [albums, setAlbums] = useState<Array<{
+    album_id: string;
+    name: string;
+    description: string;
+    created_at: string;
+    image_count: number;
+  }>>([]);
+  const [sections, setSections] = useState<Array<{
+    section_id: string;
+    name: string;
+    description: string;
+    created_at: string;
+    image_count: number;
+  }>>([]);
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string>('none');
+  const [selectedSectionId, setSelectedSectionId] = useState<string>('none');
+
+  useEffect(() => {
+    fetchAlbums();
+    fetchSections();
+  }, []);
+
+  const fetchAlbums = async () => {
+    try {
+      const data = await faceAPI.getAllAlbums();
+      setAlbums(data.albums);
+    } catch (err) {
+      console.error('Failed to fetch albums:', err);
+    }
+  };
+
+  const fetchSections = async () => {
+    try {
+      const data = await faceAPI.getAllSections();
+      setSections(data.sections);
+    } catch (err) {
+      console.error('Failed to fetch sections:', err);
+    }
+  };
 
   const handleSingleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -36,7 +84,11 @@ export default function Admin() {
     try {
       setSingleUploading(true);
       setMessage('');
-      const result = await faceAPI.uploadImage(singleFile);
+      const result = await faceAPI.uploadImage(
+        singleFile, 
+        selectedAlbumId && selectedAlbumId !== 'none' ? selectedAlbumId : undefined, 
+        selectedSectionId && selectedSectionId !== 'none' ? selectedSectionId : undefined
+      );
       setResults(result);
       setMessage(`Single upload completed: ${result.faces_detected} faces detected`);
       setSingleFile(null);
@@ -60,7 +112,11 @@ export default function Admin() {
     try {
       setMultipleUploading(true);
       setMessage('');
-      const result = await faceAPI.uploadMultipleImages(multipleFiles);
+      const result = await faceAPI.uploadMultipleImages(
+        multipleFiles,
+        selectedAlbumId && selectedAlbumId !== 'none' ? selectedAlbumId : undefined,
+        selectedSectionId && selectedSectionId !== 'none' ? selectedSectionId : undefined
+      );
       setResults(result);
       setMessage(`Multiple upload completed: ${result.successful_uploads}/${result.total_files} files uploaded, ${result.total_faces_detected} total faces detected`);
       setMultipleFiles([]);
@@ -117,6 +173,25 @@ export default function Admin() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Panel</h1>
           <p className="text-gray-600">Upload images and manage face clustering</p>
+          
+          {/* Current Selection Status */}
+          {((selectedAlbumId && selectedAlbumId !== 'none') || (selectedSectionId && selectedSectionId !== 'none')) && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Current Selection:</strong>
+                {selectedAlbumId && selectedAlbumId !== 'none' && (
+                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Album: {albums.find(a => a.album_id === selectedAlbumId)?.name || 'Unknown'}
+                  </span>
+                )}
+                {selectedSectionId && selectedSectionId !== 'none' && (
+                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Section: {sections.find(s => s.section_id === selectedSectionId)?.name || 'Unknown'}
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -146,6 +221,45 @@ export default function Admin() {
                   </p>
                 )}
               </div>
+              
+              {/* Album Selection */}
+              <div>
+                <label htmlFor="single-album" className="block text-sm font-medium text-gray-700 mb-2">
+                  Album (Optional)
+                </label>
+                <Select value={selectedAlbumId} onValueChange={setSelectedAlbumId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an album" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {albums.map((album) => (
+                      <SelectItem key={album.album_id} value={album.album_id}>
+                        {album.name} ({album.image_count} images)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Section Selection */}
+              <div>
+                <label htmlFor="single-section" className="block text-sm font-medium text-gray-700 mb-2">
+                  Section (Optional)
+                </label>
+                <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sections.map((section) => (
+                      <SelectItem key={section.section_id} value={section.section_id}>
+                        {section.name} ({section.image_count} images)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
               <Button 
                 onClick={handleSingleUpload} 
                 disabled={!singleFile || singleUploading}
@@ -183,6 +297,47 @@ export default function Admin() {
                   </p>
                 )}
               </div>
+
+              {/* Album Selection */}
+              <div>
+                <label htmlFor="multiple-album" className="block text-sm font-medium text-gray-700 mb-2">
+                  Album (Optional)
+                </label>
+                <Select value={selectedAlbumId} onValueChange={setSelectedAlbumId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an album" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Album</SelectItem>
+                    {albums.map((album) => (
+                      <SelectItem key={album.album_id} value={album.album_id}>
+                        {album.name} ({album.image_count} images)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Section Selection */}
+              <div>
+                <label htmlFor="multiple-section" className="block text-sm font-medium text-gray-700 mb-2">
+                  Section (Optional)
+                </label>
+                <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Section</SelectItem>
+                    {sections.map((section) => (
+                      <SelectItem key={section.section_id} value={section.section_id}>
+                        {section.name} ({section.image_count} images)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
               <Button 
                 onClick={handleMultipleUpload} 
                 disabled={multipleFiles.length === 0 || multipleUploading}
@@ -286,7 +441,7 @@ export default function Admin() {
         )}
 
         {/* Navigation */}
-        <div className="mt-8 flex gap-4 justify-center">
+        <div className="mt-8 flex gap-4 justify-center flex-wrap">
           <Button 
             variant="outline" 
             onClick={() => window.location.href = '/'}
@@ -298,6 +453,18 @@ export default function Admin() {
             onClick={() => window.location.href = '/persons'}
           >
             View Persons
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.href = '/albums'}
+          >
+            Manage Albums
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.href = '/sections'}
+          >
+            Manage Sections
           </Button>
         </div>
       </div>
