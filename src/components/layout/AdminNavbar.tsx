@@ -15,11 +15,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '../ui/button';
 
 const navigation = [
-  { name: 'Gallery', href: '/', icon: Home, primary: true },
-  { name: 'Persons', href: '/persons', icon: Users, primary: true },
+    { name: 'Albums', href: '/admin/albums', icon: Home, primary: true },
+    { name: 'Sections', href: '/admin/sections', icon: Users, primary: true },
+    { name: 'Persons', href: '/admin/persons', icon: Users, primary: true },
 ];
 
-export default function Navbar() {
+export default function AdminNavbar() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   

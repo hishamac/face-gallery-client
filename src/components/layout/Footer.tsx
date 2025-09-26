@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function Footer() {
   return (
     <footer className="mt-auto py-8 px-4">
@@ -82,41 +84,41 @@ export default function Footer() {
             <h3 className="font-medium text-gray-900 mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>
-                <a
-                  href="/results"
-                  className="hover:text-gray-900 transition-colors"
+                <Link
+                  to="/results"
+                  className="text-primary hover:text-primary/80 transition-colors"
                 >
                   Results
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/" className="hover:text-gray-900 transition-colors">
+                <Link to="/" className="text-primary hover:text-primary/80 transition-colors">
                   Gallery
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/downloads"
-                  className="hover:text-gray-900 transition-colors"
+                <Link
+                  to="/downloads"
+                  className="text-primary hover:text-primary/80 transition-colors"
                 >
                   Downloads
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/schedules"
-                  className="hover:text-gray-900 transition-colors"
+                <Link
+                  to="/schedules"
+                  className="text-primary hover:text-primary/80 transition-colors"
                 >
                   Schedules
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/wall"
-                  className="hover:text-gray-900 transition-colors"
+                <Link
+                  to="/wall"
+                  className="text-primary hover:text-primary/80 transition-colors"
                 >
                   Wall
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -144,24 +146,24 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
             <p>© 2025 Festie.app All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a
-                href="/privacy"
-                className="hover:text-gray-900 transition-colors"
+              <Link
+                to="/privacy"
+                className="text-primary hover:text-primary/80 transition-colors"
               >
                 Privacy Policy
-              </a>
-              <a
-                href="/terms"
-                className="hover:text-gray-900 transition-colors"
+              </Link>
+              <Link
+                to="/terms"
+                className="text-primary hover:text-primary/80 transition-colors"
               >
                 Terms and Conditions
-              </a>
-              <a
-                href="/contact"
-                className="hover:text-gray-900 transition-colors"
+              </Link>
+              <Link
+                to="/contact"
+                className="text-primary hover:text-primary/80 transition-colors"
               >
                 Contact Us
-              </a>
+              </Link>
             </div>
           </div>
         </div>

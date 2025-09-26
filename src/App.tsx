@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Layout from './components/layout/Layout';
+import AdminLayout from './components/layout/AdminLayout';
 import Gallery from './components/Gallery';
 import PersonDetail from './components/PersonDetail';
 import ImageDetail from './components/ImageDetail';
@@ -35,24 +36,29 @@ function App() {
               <ImageDetail />
             </Layout>
           } />
-          
-          {/* Album and Section Pages */}
-          <Route path="/albums" element={
-            <Layout>
-              <Albums />
-            </Layout>
-          } />
-          <Route path="/sections" element={
-            <Layout>
-              <Sections />
-            </Layout>
-          } />
-          
+
           {/* Admin Pages with Admin Layout */}
           <Route path="/admin" element={
-            <Layout>
+            <AdminLayout>
               <Admin />
-            </Layout>
+            </AdminLayout>
+          } />
+          
+          {/* Admin Album, Section, and Person Pages with Admin Layout */}
+          <Route path="/admin/albums" element={
+            <AdminLayout>
+              <Albums />
+            </AdminLayout>
+          } />
+          <Route path="/admin/sections" element={
+            <AdminLayout>
+              <Sections />
+            </AdminLayout>
+          } />
+          <Route path="/admin/persons" element={
+            <AdminLayout>
+              <Persons />
+            </AdminLayout>
           } />
         </Routes>
       </Router>

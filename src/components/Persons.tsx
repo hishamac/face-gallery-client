@@ -1,9 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { faceAPI } from "@/services/api";
-import { Eye, Image as ImageIcon, Search, User, Users } from "lucide-react";
+import { Eye, Image as ImageIcon, Search, User, Users, Edit2, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Person {
   person_id: string;
@@ -19,12 +21,18 @@ interface PersonsData {
 }
 
 export default function Persons() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname === '/admin/persons';
+  
   const [personsData, setPersonsData] = useState<PersonsData | null>(null);
   const [filteredPersons, setFilteredPersons] = useState<Person[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingPersonId, setEditingPersonId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPersons();
@@ -58,6 +66,48 @@ export default function Persons() {
       setError("Failed to load persons");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditClick = (person: Person) => {
+    setEditingPersonId(person.person_id);
+    setEditingName(person.person_name);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPersonId(null);
+    setEditingName("");
+  };
+
+  const handleSaveEdit = async (personId: string) => {
+    if (!editingName.trim()) {
+      toast.error("Person name cannot be empty");
+      return;
+    }
+
+    try {
+      setUpdating(personId);
+      // TODO: Add API call to update person name
+      // await faceAPI.updatePersonName(personId, editingName);
+      
+      // Update local state
+      if (personsData) {
+        const updatedPersons = personsData.persons.map(person => 
+          person.person_id === personId 
+            ? { ...person, person_name: editingName }
+            : person
+        );
+        setPersonsData({ ...personsData, persons: updatedPersons });
+      }
+      
+      setEditingPersonId(null);
+      setEditingName("");
+      toast.success("Person name updated successfully");
+    } catch (err) {
+      console.error("Failed to update person name:", err);
+      toast.error("Failed to update person name");
+    } finally {
+      setUpdating(null);
     }
   };
 
@@ -168,41 +218,84 @@ export default function Persons() {
         {personsData && (debouncedSearchTerm ? filteredPersons : personsData.persons).length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {(debouncedSearchTerm ? filteredPersons : personsData.persons).map((person) => (
-              <Link key={person.person_id} to={`/person/${person.person_id}`}>
+              <div key={person.person_id}>
                 <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-                  <div className="relative aspect-square bg-muted">
-                    {person.thumbnail ? (
-                      <img
-                        src={faceAPI.getFaceUrl(person.thumbnail)}
-                        alt={`${person.person_name} face`}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={(e) => {
-                          const img = e.target as HTMLImageElement;
-                          img.style.display = "none";
-                          const parent = img.parentElement;
-                          if (parent) {
-                            parent.innerHTML =
-                              '<div class="w-full h-full flex items-center justify-center text-muted-foreground"><div class="text-center"><div class="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div><p class="text-sm">No Face</p></div></div>';
-                          }
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                        <div className="text-center">
-                          <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
-                            <User className="w-8 h-8" />
+                  <Link to={`/person/${person.person_id}`} className="block">
+                    <div className="relative aspect-square bg-muted">
+                      {person.thumbnail ? (
+                        <img
+                          src={faceAPI.getFaceUrl(person.thumbnail)}
+                          alt={`${person.person_name} face`}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            img.style.display = "none";
+                            const parent = img.parentElement;
+                            if (parent) {
+                              parent.innerHTML =
+                                '<div class="w-full h-full flex items-center justify-center text-muted-foreground"><div class="text-center"><div class="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div><p class="text-sm">No Face</p></div></div>';
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                          <div className="text-center">
+                            <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                              <User className="w-8 h-8" />
+                            </div>
+                            <p className="text-sm">No Face</p>
                           </div>
-                          <p className="text-sm">No Face</p>
                         </div>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
+                      )}
+                      <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                  </Link>
                   <CardContent className="p-4">
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-foreground truncate">
-                        {person.person_name}
-                      </h3>
+                      {/* Person Name - Editable in admin mode */}
+                      {isAdminRoute && editingPersonId === person.person_id ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            className="text-sm"
+                            disabled={updating === person.person_id}
+                          />
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => handleSaveEdit(person.person_id)}
+                            disabled={updating === person.person_id}
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
+                            onClick={handleCancelEdit}
+                            disabled={updating === person.person_id}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-foreground truncate">
+                            {person.person_name}
+                          </h3>
+                          {isAdminRoute && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditClick(person)}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                      
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <User className="w-4 h-4" />
@@ -222,7 +315,7 @@ export default function Persons() {
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
+              </div>
             ))}
           </div>
         ) : (
