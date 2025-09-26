@@ -34,8 +34,7 @@ export default function Admin() {
   const [clustering, setClustering] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [message, setMessage] = useState<string>("");
-  const [results, setResults] = useState<any>(null);
+
   const [initialLoading, setInitialLoading] = useState(true);
 
   // Album and Section state
@@ -72,8 +71,8 @@ export default function Admin() {
     try {
       const data = await faceAPI.getAllAlbums();
       setAlbums(data.albums);
-    } catch (err) {
-      console.error("Failed to fetch albums:", err);
+    } catch (err: any) {
+      toast.error("Failed to fetch albums: " + (err.response?.data?.error || err.message));
     }
   };
 
@@ -81,8 +80,8 @@ export default function Admin() {
     try {
       const data = await faceAPI.getAllSections();
       setSections(data.sections);
-    } catch (err) {
-      console.error("Failed to fetch sections:", err);
+    } catch (err: any) {
+      toast.error("Failed to fetch sections: " + (err.response?.data?.error || err.message));
     }
   };
 
@@ -96,14 +95,12 @@ export default function Admin() {
 
   const handleMultipleUpload = async () => {
     if (multipleFiles.length === 0) {
-      setMessage("Please select files");
+      toast.error("Please select files");
       return;
     }
 
     try {
       setMultipleUploading(true);
-      setMessage("");
-      setResults(null);
       const result = await faceAPI.uploadMultipleImages(
         multipleFiles,
         selectedAlbumId && selectedAlbumId !== "none"
@@ -132,11 +129,10 @@ export default function Admin() {
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
     } catch (error: any) {
-      setMessage(
+      toast.error(
         "Error uploading files: " +
           (error.response?.data?.error || error.message)
       );
-      setResults(null);
     } finally {
       setMultipleUploading(false);
     }
@@ -145,17 +141,14 @@ export default function Admin() {
   const handleClustering = async () => {
     try {
       setClustering(true);
-      setMessage("");
-      setResults(null);
       await faceAPI.clusterFaces();
       // Show success toast instead of page message
       toast.success(`Clustering completed successfully`);
     } catch (error: any) {
-      setMessage(
+      toast.error(
         "Error during clustering: " +
           (error.response?.data?.error || error.message)
       );
-      setResults(null);
     } finally {
       setClustering(false);
     }
@@ -169,17 +162,14 @@ export default function Admin() {
 
     try {
       setResetting(true);
-      setMessage("");
-      const result = await faceAPI.resetDatabase();
-      setResults(result);
-      setMessage("Database reset successfully! All data has been cleared.");
+      await faceAPI.resetDatabase();
+      toast.success("Database reset successfully! All data has been cleared.");
       setShowResetConfirm(false);
     } catch (error: any) {
-      setMessage(
+      toast.error(
         "Error resetting database: " +
           (error.response?.data?.error || error.message)
       );
-      setResults(null);
     } finally {
       setResetting(false);
     }
@@ -577,58 +567,6 @@ export default function Admin() {
           </Card>
         </div>
 
-        {/* Results Section */}
-        {message && (
-          <div className="mb-8">
-            <Card
-              className={`border-l-4 ${
-                message.includes("Error")
-                  ? "border-destructive bg-destructive/5"
-                  : "border-primary bg-primary/5"
-              }`}
-            >
-              <CardHeader>
-                <CardTitle
-                  className={`flex items-center gap-2 ${
-                    message.includes("Error")
-                      ? "text-destructive"
-                      : "text-primary"
-                  }`}
-                >
-                  {message.includes("Error") ? (
-                    <XCircle className="w-5 h-5" />
-                  ) : (
-                    <CheckCircle className="w-5 h-5" />
-                  )}
-                  {message.includes("Error") ? "Error" : "Success"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p
-                  className={`text-sm ${
-                    message.includes("Error")
-                      ? "text-destructive"
-                      : "text-primary"
-                  }`}
-                >
-                  {message}
-                </p>
-                {results && (
-                  <details className="mt-4">
-                    <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
-                      View Details
-                    </summary>
-                    <div className="mt-2 p-4 bg-muted rounded-lg">
-                      <pre className="text-xs overflow-auto whitespace-pre-wrap">
-                        {JSON.stringify(results, null, 2)}
-                      </pre>
-                    </div>
-                  </details>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
       </div>
     </div>
   );
