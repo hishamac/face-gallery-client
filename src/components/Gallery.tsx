@@ -19,6 +19,8 @@ import {
   ChevronDown,
   Image as ImageIcon,
   Upload,
+  X,
+  Filter,
 } from "lucide-react";
 import type { ImageSummary } from "@/types/api";
 
@@ -44,20 +46,24 @@ export default function Gallery() {
   const [error, setError] = useState<string>("");
 
   // Albums and sections state
-  const [sections, setSections] = useState<Array<{
-    section_id: string;
-    name: string;
-    description: string;
-    created_at: string;
-    image_count: number;
-  }>>([]);
-  const [albums, setAlbums] = useState<Array<{
-    album_id: string;
-    name: string;
-    description: string;
-    created_at: string;
-    image_count: number;
-  }>>([]);
+  const [sections, setSections] = useState<
+    Array<{
+      section_id: string;
+      name: string;
+      description: string;
+      created_at: string;
+      image_count: number;
+    }>
+  >([]);
+  const [albums, setAlbums] = useState<
+    Array<{
+      album_id: string;
+      name: string;
+      description: string;
+      created_at: string;
+      image_count: number;
+    }>
+  >([]);
 
   // Search state
   const [searchTerm] = useState("");
@@ -233,12 +239,15 @@ export default function Gallery() {
                 <div className="relative">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-all backdrop-blur-sm whitespace-nowrap">
+                      <Button
+                        variant="outline"
+                        className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-all backdrop-blur-sm whitespace-nowrap"
+                      >
                         <ImageIcon className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium">
                           Search by Image
                         </span>
-                      </button>
+                      </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-80">
                       <div className="space-y-4">
@@ -300,11 +309,22 @@ export default function Gallery() {
                 <div className="relative">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-all backdrop-blur-sm whitespace-nowrap">
-                        <Tag className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium">Sections</span>
+                      <Button
+                        variant="outline"
+                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all backdrop-blur-sm whitespace-nowrap ${
+                          selectedSection !== "All Sections"
+                            ? "border-primary bg-primary/10 text-primary hover:bg-primary/20"
+                            : "border-border bg-card text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Tag className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          {selectedSection === "All Sections"
+                            ? "Sections"
+                            : selectedSection}
+                        </span>
                         <ChevronDown className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
                       <DropdownMenuItem
@@ -334,16 +354,29 @@ export default function Gallery() {
                 <div className="relative">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-all backdrop-blur-sm whitespace-nowrap">
-                        <Album className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium">Albums</span>
+                      <Button
+                        variant="outline"
+                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all backdrop-blur-sm whitespace-nowrap ${
+                          selectedAlbum !== "All Albums"
+                            ? "border-primary bg-primary/10 text-primary hover:bg-primary/20"
+                            : "border-border bg-card text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Album className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          {selectedAlbum === "All Albums"
+                            ? "Albums"
+                            : selectedAlbum}
+                        </span>
                         <ChevronDown className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
                       <DropdownMenuItem
                         onClick={() => setSelectedAlbum("All Albums")}
-                        className={selectedAlbum === "All Albums" ? "bg-accent" : ""}
+                        className={
+                          selectedAlbum === "All Albums" ? "bg-accent" : ""
+                        }
                       >
                         All Albums
                       </DropdownMenuItem>
@@ -351,7 +384,9 @@ export default function Gallery() {
                         <DropdownMenuItem
                           key={album.album_id}
                           onClick={() => setSelectedAlbum(album.name)}
-                          className={selectedAlbum === album.name ? "bg-accent" : ""}
+                          className={
+                            selectedAlbum === album.name ? "bg-accent" : ""
+                          }
                         >
                           {album.name} ({album.image_count})
                         </DropdownMenuItem>
@@ -363,7 +398,60 @@ export default function Gallery() {
             </div>
           </div>
         </div>
+        {/* Active Filters Display */}
+        {(selectedSection !== "All Sections" ||
+          selectedAlbum !== "All Albums") && (
+          <div className="mb-6">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Filter className="w-4 h-4" />
+                  Active Filters:
+                </div>
 
+                {selectedSection !== "All Sections" && (
+                  <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                    <Tag className="w-3 h-3" />
+                    <span>{selectedSection}</span>
+                    <Button
+                      onClick={() => setSelectedSection("All Sections")}
+                      variant="outline"
+                      size="sm"
+                      className="ml-1 hover:bg-primary/20 rounded-full p-0.5 transition-colors h-auto w-auto"
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
+
+                {selectedAlbum !== "All Albums" && (
+                  <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                    <Album className="w-3 h-3" />
+                    <span>{selectedAlbum}</span>
+                    <Button
+                      onClick={() => setSelectedAlbum("All Albums")}
+                      variant="outline"
+                      size="sm"
+                      className="ml-1 hover:bg-primary/20 rounded-full p-0.5 transition-colors h-auto w-auto"
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
+
+                <Button
+                  onClick={() => {
+                    setSelectedSection("All Sections");
+                    setSelectedAlbum("All Albums");
+                  }}
+                  className="text-sm p-2"
+                >
+                  Clear all filters
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}{" "}
         {/* Results Info */}
         {isSearchMode && (
           <div className="mb-6">
@@ -377,7 +465,6 @@ export default function Gallery() {
             </div>
           </div>
         )}
-
         {/* Masonry Grid */}
         <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
           {imagesToDisplay.map((image, index) => (
@@ -410,7 +497,6 @@ export default function Gallery() {
             </div>
           ))}
         </div>
-
         {/* Empty State */}
         {imagesToDisplay.length === 0 && (
           <div className="text-center py-12">
