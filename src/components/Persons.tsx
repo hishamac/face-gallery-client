@@ -64,11 +64,42 @@ export default function Persons() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
+        {/* Hero Section Skeleton */}
         <div className="py-20 mt-16">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center">
-              <div className="animate-pulse">Loading persons...</div>
+            <div className="text-center space-y-8">
+              <div className="space-y-6">
+                <div className="h-16 bg-gray-200 rounded mx-auto w-64 animate-pulse"></div>
+                <div className="h-6 bg-gray-200 rounded mx-auto w-96 animate-pulse"></div>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4">
+          {/* Search Bar Skeleton */}
+          <div className="mb-12">
+            <div className="relative">
+              <div className="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
+            </div>
+          </div>
+
+          {/* Persons Grid Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Card key={index} className="overflow-hidden">
+                <div className="aspect-square bg-gray-200 animate-pulse"></div>
+                <CardContent className="p-4">
+                  <div className="space-y-2">
+                    <div className="h-5 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="flex items-center justify-between">
+                      <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </div>

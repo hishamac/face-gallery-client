@@ -189,8 +189,47 @@ export default function Gallery() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        Loading images...
+      <div className="min-h-screen bg-background">
+        {/* Hero Section Skeleton */}
+        <div className="py-20">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center space-y-8">
+              <div className="space-y-6">
+                <div className="h-16 bg-gray-200 rounded mx-auto w-64 animate-pulse"></div>
+                <div className="h-6 bg-gray-200 rounded mx-auto w-96 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search Controls Skeleton */}
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="mb-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+              <div className="flex gap-4 items-center justify-center flex-wrap">
+                <div className="h-12 bg-gray-200 rounded-xl w-40 animate-pulse"></div>
+                <div className="h-12 bg-gray-200 rounded-xl w-32 animate-pulse"></div>
+                <div className="h-12 bg-gray-200 rounded-xl w-32 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Masonry Grid Skeleton */}
+          <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <div key={index} className="break-inside-avoid mb-6">
+                <div className="bauhaus-card overflow-hidden p-0">
+                  <div 
+                    className="w-full bg-gray-200 rounded animate-pulse"
+                    style={{ 
+                      height: `${200 + (index % 3) * 100}px` // Varied heights for masonry effect
+                    }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   if (error)

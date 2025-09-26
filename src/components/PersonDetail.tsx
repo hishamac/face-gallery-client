@@ -158,10 +158,67 @@ const PersonDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
-          <div className="text-lg text-gray-700">Loading person details...</div>
+      <div className="min-h-screen bg-gray-50">
+        {/* Hero Section Skeleton */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div className="h-9 bg-gray-200 rounded w-48 animate-pulse"></div>
+                  <div className="h-8 bg-gray-200 rounded w-20 animate-pulse"></div>
+                </div>
+                <div className="h-6 bg-gray-200 rounded w-64 mt-3 animate-pulse"></div>
+              </div>
+              <div className="ml-4">
+                <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Detected Faces Section Skeleton */}
+          <Card className="bg-white shadow-xl border-gray-200 mb-8">
+            <CardHeader className="bg-gray-50 border-b border-gray-200">
+              <div className="h-7 bg-gray-200 rounded w-48 animate-pulse"></div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <div key={index} className="group relative">
+                    <div className="aspect-square bg-gray-200 rounded-xl animate-pulse"></div>
+                    <div className="flex gap-2 mt-3">
+                      <div className="flex-1 h-8 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="flex-1 h-8 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Images Section Skeleton */}
+          <Card className="bg-white shadow-xl border-gray-200">
+            <CardHeader className="bg-gray-50 border-b border-gray-200">
+              <div className="h-7 bg-gray-200 rounded w-32 animate-pulse"></div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <div key={index} className="break-inside-avoid mb-6">
+                    <div 
+                      className="bg-gray-200 rounded-lg animate-pulse"
+                      style={{ 
+                        height: `${200 + (index % 3) * 100}px` // Varied heights for masonry effect
+                      }}
+                    ></div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );

@@ -35,6 +35,7 @@ export default function Admin() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [results, setResults] = useState<any>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Album and Section state
   const [albums, setAlbums] = useState<
@@ -59,8 +60,11 @@ export default function Admin() {
   const [selectedSectionId, setSelectedSectionId] = useState<string>("none");
 
   useEffect(() => {
-    fetchAlbums();
-    fetchSections();
+    const loadData = async () => {
+      await Promise.all([fetchAlbums(), fetchSections()]);
+      setInitialLoading(false);
+    };
+    loadData();
   }, []);
 
   const fetchAlbums = async () => {
@@ -169,6 +173,88 @@ export default function Admin() {
       setResetting(false);
     }
   };
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Hero Section Skeleton */}
+        <div className="py-20 mt-16">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center space-y-8">
+              <div className="space-y-6">
+                <div className="h-16 bg-gray-200 rounded mx-auto w-64 animate-pulse"></div>
+                <div className="h-6 bg-gray-200 rounded mx-auto w-96 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4">
+          {/* Image Upload Section Skeleton */}
+          <div className="mb-12">
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 bg-gray-200 rounded-full animate-pulse"></div>
+                  <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
+                </div>
+                <div className="h-4 bg-gray-200 rounded w-96 animate-pulse"></div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-xl p-8">
+                  <div className="text-center space-y-4">
+                    <div className="h-12 w-12 bg-gray-200 rounded mx-auto animate-pulse"></div>
+                    <div className="h-6 bg-gray-200 rounded w-32 mx-auto animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded w-48 mx-auto animate-pulse"></div>
+                    <div className="h-10 bg-gray-200 rounded w-24 mx-auto animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div className="h-5 bg-gray-200 rounded w-24 animate-pulse"></div>
+                    <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-5 bg-gray-200 rounded w-28 animate-pulse"></div>
+                    <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="h-16 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Management Actions Skeleton */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 bg-gray-200 rounded-full animate-pulse"></div>
+                  <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
+                </div>
+                <div className="h-4 bg-gray-200 rounded w-80 animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 bg-gray-200 rounded-full animate-pulse"></div>
+                  <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
+                </div>
+                <div className="h-4 bg-gray-200 rounded w-72 animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
