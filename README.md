@@ -2,7 +2,7 @@
 
 A modern React TypeScript application for intelligent face clustering and management. This client provides an intuitive interface to upload images, automatically detect and cluster faces, and manually manage person assignments.
 
-# Face Gallery Client v2.0
+# Face Gallery Client
 
 A modern React TypeScript application for intelligent face clustering and gallery management. This client provides an intuitive interface to upload images, automatically detect and cluster faces, and manually manage person assignments with comprehensive album and section organization.
 
