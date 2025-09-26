@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Eye, Move } from 'lucide-react';
 import { faceAPI } from '@/services/api';
 import type { PersonDetails } from '@/types/api';
 
@@ -158,7 +159,10 @@ const PersonDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-lg">Loading person details...</div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
+          <div className="text-lg text-gray-700">Loading person details...</div>
+        </div>
       </div>
     );
   }
@@ -166,10 +170,10 @@ const PersonDetail = () => {
   if (error || !person) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 mb-4">{error || 'Person not found'}</div>
+        <div className="text-center bg-white rounded-2xl p-8 shadow-xl max-w-md mx-4">
+          <div className="text-red-500 mb-6 text-lg font-medium">{error || 'Person not found'}</div>
           <Link to="/">
-            <Button>Back to Gallery</Button>
+            <Button className="bg-gray-600 hover:bg-gray-700 text-white">Back to Gallery</Button>
           </Link>
         </div>
       </div>
@@ -177,158 +181,182 @@ const PersonDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-between">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {isRenaming ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <input
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="text-3xl font-bold text-gray-900 bg-white border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="text-2xl sm:text-3xl font-bold text-gray-900 bg-white border-2 border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent min-w-0 flex-1 max-w-md"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleRename();
                       if (e.key === 'Escape') cancelRenaming();
                     }}
                   />
-                  <Button
-                    onClick={handleRename}
-                    disabled={!newName.trim() || renameLoading}
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    {renameLoading ? 'Saving...' : 'Save'}
-                  </Button>
-                  <Button
-                    onClick={cancelRenaming}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Cancel
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleRename}
+                      disabled={!newName.trim() || renameLoading}
+                      size="sm"
+                      className="bg-gray-600 hover:bg-gray-700 text-white shadow-md"
+                    >
+                      {renameLoading ? 'Saving...' : 'Save'}
+                    </Button>
+                    <Button
+                      onClick={cancelRenaming}
+                      variant="outline"
+                      size="sm"
+                      className="bg-white border-gray-300 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-bold text-gray-900">{person.person_name}</h1>
+                <div className="flex items-center gap-4 flex-wrap">
+                  <h1 
+                    className="text-2xl sm:text-3xl font-bold text-gray-900 truncate max-w-xs sm:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl" 
+                    title={person.person_name}
+                  >
+                    {person.person_name}
+                  </h1>
                   <Button
                     onClick={startRenaming}
                     variant="outline"
                     size="sm"
+                    className="bg-white border-gray-300 hover:bg-gray-50 text-gray-700 shadow-md"
                   >
                     Rename
                   </Button>
                 </div>
               )}
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 mt-3 text-lg">
                 {person.total_faces} face{person.total_faces !== 1 ? 's' : ''} across {person.total_images} image{person.total_images !== 1 ? 's' : ''}
               </p>
             </div>
-            <Link to="/">
-              <Button variant="outline">Back to Gallery</Button>
+            <Link to="/" className="ml-4">
+              <Button 
+                variant="outline" 
+                className="bg-white border-gray-300 hover:bg-gray-50 shadow-md"
+              >
+                Back to Gallery
+              </Button>
             </Link>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Cropped Faces Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Detected Faces ({person.total_faces})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {person.faces.map((face) => (
-                  <div key={face.face_id} className="group relative">
-                    <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden">
-                      {face.cropped_face_filename && (
-                        <img
-                          src={faceAPI.getFaceUrl(face.cropped_face_filename)}
-                          alt="Cropped face"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik01MCA2NS41QzU4LjI4NDMgNjUuNSA2NSA1OC43ODQzIDY1IDUwLjVDNjUgNDIuMjE1NyA1OC4yODQzIDM1LjUgNTAgMzUuNUM0MS43MTU3IDM1LjUgMzUgNDIuMjE1NyAzNSA1MC41QzM1IDU4Ljc4NDMgNDEuNzE1NyA2NS41IDUwIDY1LjVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
-                          }}
-                        />
-                      )}
-                    </div>
-                    <div className="space-y-2 mt-2">
-                      <Link to={`/image/${face.image_id}`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-xs"
-                        >
-                          View in Image
-                        </Button>
-                      </Link>
-                      <Button
-                        onClick={() => startMoveFace(face.face_id)}
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs bg-orange-50 hover:bg-orange-100 border-orange-200"
-                      >
-                        Move Face
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Images Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Images ({person.total_images})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {person.images.map((image) => (
-                  <Link
-                    key={image.image_id}
-                    to={`/image/${image.image_id}`}
-                    className="group block"
-                  >
-                    <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden">
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Detected Faces Section - Full Width */}
+        <Card className="bg-white shadow-xl border-gray-200 mb-8">
+          <CardHeader className="bg-gray-50 border-b border-gray-200">
+            <CardTitle className="text-xl font-semibold text-gray-900">
+              Detected Faces ({person.total_faces})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+              {person.faces.map((face) => (
+                <div key={face.face_id} className="group relative">
+                  <div className="aspect-square bg-gray-200 rounded-xl overflow-hidden shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
+                    {face.cropped_face_filename && (
                       <img
-                        src={faceAPI.getImageUrl(image.filename)}
-                        alt={image.filename}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        src={faceAPI.getFaceUrl(face.cropped_face_filename)}
+                        alt="Cropped face"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTM1QzE2My4yNTQgMTM1IDE3NCAxMjQuMjU0IDE3NCAxMTFDMTc0IDk3Ljc0NTggMTYzLjI1NCA4NyAxNTAgODdDMTM2Ljc0NiA4NyAxMjYgOTcuNzQ1OCAxMjYgMTExQzEyNiAxMjQuMjU0IDEzNi43NDYgMTM1IDE1MCAxMzVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik01MCA2NS41QzU4LjI4NDMgNjUuNSA2NSA1OC43ODQzIDY1IDUwLjVDNjUgNDIuMjE1NyA1OC4yODQzIDM1LjUgNTAgMzUuNUM0MS43MTU3IDM1LjUgMzUgNDIuMjE1NyAzNSA1MC41QzM1IDU4Ljc4NDMgNDEuNzE1NyA2NS41IDUwIDY1LjVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
                         }}
                       />
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2 truncate">
-                      {image.filename}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                    )}
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex gap-2 mt-3">
+                    <Link to={`/image/${face.image_id}`} className="flex-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full p-2 bg-white border-gray-300 hover:bg-gray-50 shadow-sm"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button
+                      onClick={() => startMoveFace(face.face_id)}
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 p-2 bg-white border-gray-300 hover:bg-gray-50 shadow-sm"
+                    >
+                      <Move className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Images Section */}
+        <Card className="bg-white shadow-xl border-gray-200">
+          <CardHeader className="bg-gray-50 border-b border-gray-200">
+            <CardTitle className="text-xl font-semibold text-gray-900">
+              Images ({person.total_images})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+              {person.images.map((image) => (
+                <div
+                  key={image.image_id}
+                  className="break-inside-avoid mb-6"
+                >
+                  <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer">
+                    <Link to={`/image/${image.image_id}`}>
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={faceAPI.getImageUrl(image.filename)}
+                          alt={image.filename}
+                          className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTM1QzE2My4yNTQgMTM1IDE3NCAxMjQuMjU0IDE3NCAxMTFDMTc0IDk3Ljc0NTggMTYzLjI1NCA4NyAxNTAgODdDMTM2Ljc0NiA4NyAxMjYgOTcuNzQ1OCAxMjYgMTExQzEyNiAxMjQuMjU0IDEzNi43NDYgMTM1IDE1MCAxMzVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gray-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Move Face Modal */}
       {showMoveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Move Face</h3>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-200">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">Move Face</h3>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <h4 className="font-medium mb-2">Move to existing person:</h4>
-                <div className="max-h-40 overflow-y-auto space-y-2">
+                <h4 className="font-semibold text-gray-800 mb-3">Move to existing person:</h4>
+                <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
                   {allPersons.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No other persons available</p>
+                    <p className="text-gray-500 text-sm py-4 text-center bg-gray-50 rounded-lg">
+                      No other persons available
+                    </p>
                   ) : (
                     allPersons.map((person) => (
                       <Button
@@ -336,32 +364,33 @@ const PersonDetail = () => {
                         onClick={() => moveFaceToPerson(person.id)}
                         disabled={moveLoading}
                         variant="outline"
-                        className="w-full justify-start text-left"
+                        className="w-full justify-start text-left bg-white border-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm truncate"
+                        title={person.name}
                       >
-                        {person.name}
+                        <span className="truncate">{person.name}</span>
                       </Button>
                     ))
                   )}
                 </div>
               </div>
               
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-2">Or create new person:</h4>
+              <div className="border-t border-gray-200 pt-4">
+                <h4 className="font-semibold text-gray-800 mb-3">Or create new person:</h4>
                 <Button
                   onClick={moveFaceToNewPerson}
                   disabled={moveLoading}
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-gray-600 hover:bg-gray-700 text-white shadow-md"
                 >
                   {moveLoading ? 'Moving...' : 'Move to New Person'}
                 </Button>
               </div>
             </div>
             
-            <div className="flex gap-2 mt-6">
+            <div className="flex gap-3 mt-8">
               <Button
                 onClick={cancelMoveFace}
                 variant="outline"
-                className="flex-1"
+                className="flex-1 bg-white border-gray-300 hover:bg-gray-50 shadow-sm"
                 disabled={moveLoading}
               >
                 Cancel

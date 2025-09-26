@@ -1,44 +1,62 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { AlertTriangle } from 'lucide-react';
-import { faceAPI } from '@/services/api';
+} from "@/components/ui/select";
+import { faceAPI } from "@/services/api";
+import {
+  Album,
+  AlertTriangle,
+  CheckCircle,
+  Database,
+  Image as ImageIcon,
+  Shuffle,
+  Tag,
+  Upload,
+  XCircle
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Admin() {
-  const [singleFile, setSingleFile] = useState<File | null>(null);
   const [multipleFiles, setMultipleFiles] = useState<File[]>([]);
-  const [singleUploading, setSingleUploading] = useState(false);
   const [multipleUploading, setMultipleUploading] = useState(false);
   const [clustering, setClustering] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [message, setMessage] = useState<string>('');
+  const [message, setMessage] = useState<string>("");
   const [results, setResults] = useState<any>(null);
 
   // Album and Section state
-  const [albums, setAlbums] = useState<Array<{
-    album_id: string;
-    name: string;
-    description: string;
-    created_at: string;
-    image_count: number;
-  }>>([]);
-  const [sections, setSections] = useState<Array<{
-    section_id: string;
-    name: string;
-    description: string;
-    created_at: string;
-    image_count: number;
-  }>>([]);
-  const [selectedAlbumId, setSelectedAlbumId] = useState<string>('none');
-  const [selectedSectionId, setSelectedSectionId] = useState<string>('none');
+  const [albums, setAlbums] = useState<
+    Array<{
+      album_id: string;
+      name: string;
+      description: string;
+      created_at: string;
+      image_count: number;
+    }>
+  >([]);
+  const [sections, setSections] = useState<
+    Array<{
+      section_id: string;
+      name: string;
+      description: string;
+      created_at: string;
+      image_count: number;
+    }>
+  >([]);
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string>("none");
+  const [selectedSectionId, setSelectedSectionId] = useState<string>("none");
 
   useEffect(() => {
     fetchAlbums();
@@ -50,7 +68,7 @@ export default function Admin() {
       const data = await faceAPI.getAllAlbums();
       setAlbums(data.albums);
     } catch (err) {
-      console.error('Failed to fetch albums:', err);
+      console.error("Failed to fetch albums:", err);
     }
   };
 
@@ -59,72 +77,51 @@ export default function Admin() {
       const data = await faceAPI.getAllSections();
       setSections(data.sections);
     } catch (err) {
-      console.error('Failed to fetch sections:', err);
+      console.error("Failed to fetch sections:", err);
     }
   };
 
-  const handleSingleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSingleFile(e.target.files[0]);
-    }
-  };
-
-  const handleMultipleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMultipleFilesChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (e.target.files) {
       setMultipleFiles(Array.from(e.target.files));
     }
   };
 
-  const handleSingleUpload = async () => {
-    if (!singleFile) {
-      setMessage('Please select a file');
-      return;
-    }
-
-    try {
-      setSingleUploading(true);
-      setMessage('');
-      const result = await faceAPI.uploadImage(
-        singleFile, 
-        selectedAlbumId && selectedAlbumId !== 'none' ? selectedAlbumId : undefined, 
-        selectedSectionId && selectedSectionId !== 'none' ? selectedSectionId : undefined
-      );
-      setResults(result);
-      setMessage(`Single upload completed: ${result.faces_detected} faces detected`);
-      setSingleFile(null);
-      // Reset the file input
-      const fileInput = document.getElementById('single-file') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-    } catch (error: any) {
-      setMessage('Error uploading file: ' + (error.response?.data?.error || error.message));
-      setResults(null);
-    } finally {
-      setSingleUploading(false);
-    }
-  };
-
   const handleMultipleUpload = async () => {
     if (multipleFiles.length === 0) {
-      setMessage('Please select files');
+      setMessage("Please select files");
       return;
     }
 
     try {
       setMultipleUploading(true);
-      setMessage('');
+      setMessage("");
       const result = await faceAPI.uploadMultipleImages(
         multipleFiles,
-        selectedAlbumId && selectedAlbumId !== 'none' ? selectedAlbumId : undefined,
-        selectedSectionId && selectedSectionId !== 'none' ? selectedSectionId : undefined
+        selectedAlbumId && selectedAlbumId !== "none"
+          ? selectedAlbumId
+          : undefined,
+        selectedSectionId && selectedSectionId !== "none"
+          ? selectedSectionId
+          : undefined
       );
       setResults(result);
-      setMessage(`Multiple upload completed: ${result.successful_uploads}/${result.total_files} files uploaded, ${result.total_faces_detected} total faces detected`);
+      setMessage(
+        `Upload completed: ${result.successful_uploads}/${result.total_files} files uploaded, ${result.total_faces_detected} total faces detected`
+      );
       setMultipleFiles([]);
       // Reset the file input
-      const fileInput = document.getElementById('multiple-files') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
+      const fileInput = document.getElementById(
+        "multiple-files"
+      ) as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
     } catch (error: any) {
-      setMessage('Error uploading files: ' + (error.response?.data?.error || error.message));
+      setMessage(
+        "Error uploading files: " +
+          (error.response?.data?.error || error.message)
+      );
       setResults(null);
     } finally {
       setMultipleUploading(false);
@@ -134,12 +131,15 @@ export default function Admin() {
   const handleClustering = async () => {
     try {
       setClustering(true);
-      setMessage('');
+      setMessage("");
       const result = await faceAPI.clusterFaces();
       setResults(result);
       setMessage(`Clustering completed successfully`);
     } catch (error: any) {
-      setMessage('Error during clustering: ' + (error.response?.data?.error || error.message));
+      setMessage(
+        "Error during clustering: " +
+          (error.response?.data?.error || error.message)
+      );
       setResults(null);
     } finally {
       setClustering(false);
@@ -154,13 +154,16 @@ export default function Admin() {
 
     try {
       setResetting(true);
-      setMessage('');
+      setMessage("");
       const result = await faceAPI.resetDatabase();
       setResults(result);
-      setMessage('Database reset successfully! All data has been cleared.');
+      setMessage("Database reset successfully! All data has been cleared.");
       setShowResetConfirm(false);
     } catch (error: any) {
-      setMessage('Error resetting database: ' + (error.response?.data?.error || error.message));
+      setMessage(
+        "Error resetting database: " +
+          (error.response?.data?.error || error.message)
+      );
       setResults(null);
     } finally {
       setResetting(false);
@@ -168,305 +171,367 @@ export default function Admin() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Panel</h1>
-          <p className="text-gray-600">Upload images and manage face clustering</p>
-          
-          {/* Current Selection Status */}
-          {((selectedAlbumId && selectedAlbumId !== 'none') || (selectedSectionId && selectedSectionId !== 'none')) && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <strong>Current Selection:</strong>
-                {selectedAlbumId && selectedAlbumId !== 'none' && (
-                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    Album: {albums.find(a => a.album_id === selectedAlbumId)?.name || 'Unknown'}
-                  </span>
-                )}
-                {selectedSectionId && selectedSectionId !== 'none' && (
-                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Section: {sections.find(s => s.section_id === selectedSectionId)?.name || 'Unknown'}
-                  </span>
-                )}
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="py-20 mt-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center space-y-8">
+            <div className="space-y-6">
+              <h1 className="text-4xl lg:text-6xl font-bold text-foreground leading-tight uppercase tracking-wide">
+                Admin Panel
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
+                Upload images, manage face clustering, and control your gallery
               </p>
             </div>
-          )}
+          </div>
         </div>
+      </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Single Image Upload */}
-          <Card>
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Current Selection Status */}
+        {((selectedAlbumId && selectedAlbumId !== "none") ||
+          (selectedSectionId && selectedSectionId !== "none")) && (
+          <div className="mb-8">
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                    <CheckCircle className="w-4 h-4" />
+                    Active Selection:
+                  </div>
+
+                  {selectedAlbumId && selectedAlbumId !== "none" && (
+                    <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                      <Album className="w-3 h-3" />
+                      <span>
+                        {albums.find((a) => a.album_id === selectedAlbumId)
+                          ?.name || "Unknown Album"}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedSectionId && selectedSectionId !== "none" && (
+                    <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                      <Tag className="w-3 h-3" />
+                      <span>
+                        {sections.find(
+                          (s) => s.section_id === selectedSectionId
+                        )?.name || "Unknown Section"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Image Upload Section */}
+        <div className="mb-12">
+          <Card className="group hover:shadow-lg transition-all duration-300">
             <CardHeader>
-              <CardTitle>Single Image Upload</CardTitle>
-              <CardDescription>Upload one image at a time</CardDescription>
+              <CardTitle className="flex items-center gap-3">
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Upload className="w-5 h-5 text-primary" />
+                </div>
+                Image Upload
+              </CardTitle>
+              <CardDescription>
+                Upload single or multiple images at once. Images will be
+                processed for face detection and clustering.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <input
-                  id="single-file"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleSingleFileChange}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100"
-                />
-                {singleFile && (
-                  <p className="mt-2 text-sm text-gray-600">
-                    Selected: {singleFile.name}
-                  </p>
-                )}
-              </div>
-              
-              {/* Album Selection */}
-              <div>
-                <label htmlFor="single-album" className="block text-sm font-medium text-gray-700 mb-2">
-                  Album (Optional)
-                </label>
-                <Select value={selectedAlbumId} onValueChange={setSelectedAlbumId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an album" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {albums.map((album) => (
-                      <SelectItem key={album.album_id} value={album.album_id}>
-                        {album.name} ({album.image_count} images)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Section Selection */}
-              <div>
-                <label htmlFor="single-section" className="block text-sm font-medium text-gray-700 mb-2">
-                  Section (Optional)
-                </label>
-                <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a section" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sections.map((section) => (
-                      <SelectItem key={section.section_id} value={section.section_id}>
-                        {section.name} ({section.image_count} images)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <Button 
-                onClick={handleSingleUpload} 
-                disabled={!singleFile || singleUploading}
-                className="w-full"
-              >
-                {singleUploading ? 'Uploading...' : 'Upload Single Image'}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Multiple Images Upload */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Multiple Images Upload</CardTitle>
-              <CardDescription>Upload multiple images at once</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <input
-                  id="multiple-files"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleMultipleFilesChange}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-green-50 file:text-green-700
-                    hover:file:bg-green-100"
-                />
-                {multipleFiles.length > 0 && (
-                  <p className="mt-2 text-sm text-gray-600">
-                    Selected: {multipleFiles.length} files
-                  </p>
-                )}
-              </div>
-
-              {/* Album Selection */}
-              <div>
-                <label htmlFor="multiple-album" className="block text-sm font-medium text-gray-700 mb-2">
-                  Album (Optional)
-                </label>
-                <Select value={selectedAlbumId} onValueChange={setSelectedAlbumId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an album" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Album</SelectItem>
-                    {albums.map((album) => (
-                      <SelectItem key={album.album_id} value={album.album_id}>
-                        {album.name} ({album.image_count} images)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Section Selection */}
-              <div>
-                <label htmlFor="multiple-section" className="block text-sm font-medium text-gray-700 mb-2">
-                  Section (Optional)
-                </label>
-                <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a section" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Section</SelectItem>
-                    {sections.map((section) => (
-                      <SelectItem key={section.section_id} value={section.section_id}>
-                        {section.name} ({section.image_count} images)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <Button 
-                onClick={handleMultipleUpload} 
-                disabled={multipleFiles.length === 0 || multipleUploading}
-                className="w-full"
-              >
-                {multipleUploading ? 'Uploading...' : `Upload ${multipleFiles.length} Images`}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Clustering Section */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Face Clustering</CardTitle>
-            <CardDescription>
-              Re-run face clustering algorithm to group similar faces. 
-              Manual assignments are preserved.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              onClick={handleClustering} 
-              disabled={clustering}
-              variant="outline"
-              className="w-full"
-            >
-              {clustering ? 'Clustering...' : 'Run Face Clustering'}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Database Reset Section */}
-        <Card className="mt-6 border-red-200">
-          <CardHeader>
-            <CardTitle className="text-red-700 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5" />
-              Danger Zone
-            </CardTitle>
-            <CardDescription className="text-red-600">
-              ⚠️ This action will permanently delete ALL data including persons, images, faces, albums, and sections. This cannot be undone!
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!showResetConfirm ? (
-              <Button 
-                onClick={handleResetDatabase}
-                disabled={resetting}
-                variant="destructive"
-                className="w-full"
-              >
-                Reset Database
-              </Button>
-            ) : (
+            <CardContent className="space-y-6">
+              {/* File Upload */}
               <div className="space-y-4">
-                <p className="text-sm text-red-700 font-medium">
-                  Are you absolutely sure? This will delete everything!
-                </p>
-                <div className="flex gap-3">
-                  <Button 
-                    onClick={handleResetDatabase}
-                    disabled={resetting}
-                    variant="destructive"
-                    className="flex-1"
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-xl p-8 transition-colors hover:border-primary/50">
+                  <div className="text-center">
+                    <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <div className="space-y-2">
+                      <p className="text-lg font-medium text-foreground">
+                        Choose Images
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Select one or more image files to upload
+                      </p>
+                    </div>
+                    <input
+                      id="multiple-files"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleMultipleFilesChange}
+                      className="hidden"
+                    />
+                    <Button
+                      onClick={() =>
+                        document.getElementById("multiple-files")?.click()
+                      }
+                      variant="outline"
+                      className="mt-4"
+                    >
+                      Browse Files
+                    </Button>
+                  </div>
+                </div>
+
+                {multipleFiles.length > 0 && (
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                      <ImageIcon className="w-4 h-4 text-primary" />
+                      Selected Files ({multipleFiles.length})
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs text-muted-foreground">
+                      {multipleFiles.slice(0, 8).map((file, index) => (
+                        <div
+                          key={index}
+                          className="truncate bg-background rounded px-2 py-1"
+                        >
+                          {file.name}
+                        </div>
+                      ))}
+                      {multipleFiles.length > 8 && (
+                        <div className="bg-background rounded px-2 py-1 text-center">
+                          +{multipleFiles.length - 8} more
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Selection Options */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Album className="w-4 h-4 text-primary" />
+                    Album (Optional)
+                  </label>
+                  <Select
+                    value={selectedAlbumId}
+                    onValueChange={setSelectedAlbumId}
                   >
-                    {resetting ? 'Resetting...' : 'Yes, Delete Everything'}
-                  </Button>
-                  <Button 
-                    onClick={() => setShowResetConfirm(false)}
-                    variant="outline"
-                    className="flex-1"
-                    disabled={resetting}
+                    <SelectTrigger className="bg-card">
+                      <SelectValue placeholder="Select an album" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Album</SelectItem>
+                      {albums.map((album) => (
+                        <SelectItem key={album.album_id} value={album.album_id}>
+                          {album.name} ({album.image_count} images)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-primary" />
+                    Section (Optional)
+                  </label>
+                  <Select
+                    value={selectedSectionId}
+                    onValueChange={setSelectedSectionId}
                   >
-                    Cancel
-                  </Button>
+                    <SelectTrigger className="bg-card">
+                      <SelectValue placeholder="Select a section" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Section</SelectItem>
+                      {sections.map((section) => (
+                        <SelectItem
+                          key={section.section_id}
+                          value={section.section_id}
+                        >
+                          {section.name} ({section.image_count} images)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Results Section */}
-        {message && (
-          <Card className="mt-6">
+              {/* Upload Button */}
+              <Button
+                onClick={handleMultipleUpload}
+                disabled={multipleFiles.length === 0 || multipleUploading}
+                className="w-full py-6 text-lg"
+              >
+                {multipleUploading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Uploading {multipleFiles.length} files...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Upload className="w-5 h-5" />
+                    Upload {multipleFiles.length || ""}{" "}
+                    {multipleFiles.length === 1 ? "Image" : "Images"}
+                  </div>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Management Actions */}
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
+          {/* Face Clustering */}
+          <Card className="group hover:shadow-lg transition-all duration-300">
             <CardHeader>
-              <CardTitle>Results</CardTitle>
+              <CardTitle className="flex items-center gap-3">
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Shuffle className="w-5 h-5 text-primary" />
+                </div>
+                Face Clustering
+              </CardTitle>
+              <CardDescription>
+                Re-run the face clustering algorithm to group similar faces.
+                Manual assignments are preserved.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className={`text-sm ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
-                {message}
-              </p>
-              {results && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <pre className="text-xs overflow-auto">
-                    {JSON.stringify(results, null, 2)}
-                  </pre>
+              <Button
+                onClick={handleClustering}
+                disabled={clustering}
+                variant="outline"
+                className="w-full py-4"
+              >
+                {clustering ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    Clustering faces...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Shuffle className="w-4 h-4" />
+                    Run Face Clustering
+                  </div>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Database Reset */}
+          <Card className="group hover:shadow-lg transition-all duration-300 border-destructive/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-destructive">
+                <div className="bg-destructive/10 p-2 rounded-full">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                </div>
+                Danger Zone
+              </CardTitle>
+              <CardDescription className="text-destructive/80">
+                ⚠️ Permanently delete ALL data including persons, images, faces,
+                albums, and sections. This cannot be undone!
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!showResetConfirm ? (
+                <Button
+                  onClick={handleResetDatabase}
+                  disabled={resetting}
+                  variant="destructive"
+                  className="w-full py-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <Database className="w-4 h-4" />
+                    Reset Database
+                  </div>
+                </Button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                    <p className="text-sm text-destructive font-medium flex items-center gap-2">
+                      <XCircle className="w-4 h-4" />
+                      Are you absolutely sure? This will delete everything!
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={handleResetDatabase}
+                      disabled={resetting}
+                      variant="destructive"
+                      className="flex-1"
+                    >
+                      {resetting ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Resetting...
+                        </div>
+                      ) : (
+                        "Yes, Delete Everything"
+                      )}
+                    </Button>
+                    <Button
+                      onClick={() => setShowResetConfirm(false)}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={resetting}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
-        )}
-
-        {/* Navigation */}
-        <div className="mt-8 flex gap-4 justify-center flex-wrap">
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.href = '/'}
-          >
-            Back to Gallery
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.href = '/persons'}
-          >
-            View Persons
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.href = '/albums'}
-          >
-            Manage Albums
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.href = '/sections'}
-          >
-            Manage Sections
-          </Button>
         </div>
+
+        {/* Results Section */}
+        {message && (
+          <div className="mb-8">
+            <Card
+              className={`border-l-4 ${
+                message.includes("Error")
+                  ? "border-destructive bg-destructive/5"
+                  : "border-primary bg-primary/5"
+              }`}
+            >
+              <CardHeader>
+                <CardTitle
+                  className={`flex items-center gap-2 ${
+                    message.includes("Error")
+                      ? "text-destructive"
+                      : "text-primary"
+                  }`}
+                >
+                  {message.includes("Error") ? (
+                    <XCircle className="w-5 h-5" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5" />
+                  )}
+                  {message.includes("Error") ? "Error" : "Success"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p
+                  className={`text-sm ${
+                    message.includes("Error")
+                      ? "text-destructive"
+                      : "text-primary"
+                  }`}
+                >
+                  {message}
+                </p>
+                {results && (
+                  <details className="mt-4">
+                    <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+                      View Details
+                    </summary>
+                    <div className="mt-2 p-4 bg-muted rounded-lg">
+                      <pre className="text-xs overflow-auto whitespace-pre-wrap">
+                        {JSON.stringify(results, null, 2)}
+                      </pre>
+                    </div>
+                  </details>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
