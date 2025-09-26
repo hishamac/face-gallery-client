@@ -13,6 +13,7 @@ const ImageDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedFace, setSelectedFace] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
   
   // Face moving states
@@ -31,6 +32,7 @@ const ImageDetail = () => {
     try {
       setLoading(true);
       setError(null);
+      setImageLoaded(false); // Reset image loaded state
       const data = await faceAPI.getImageDetails(id);
       setImageData(data);
     } catch (err) {
@@ -249,19 +251,29 @@ const ImageDetail = () => {
         {/* Full Width Image with Face Overlays */}
         <Card className="bg-white shadow-xl border-gray-200 mb-8">
           <CardContent className="p-6">
+            {/* Bounding box loading indicator */}
+            {!imageLoaded && imageData.faces.length > 0 && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 text-blue-800 text-sm">
+                  <div className="w-4 h-4 border-2 border-blue-800/30 border-t-blue-800 rounded-full animate-spin"></div>
+                  Bounding boxes loading...
+                </div>
+              </div>
+            )}
             <div className="relative inline-block w-full">
               <img
                 ref={imageRef}
                 src={faceAPI.getImageUrl(imageData.filename)}
                 alt={imageData.filename}
                 className="w-full h-auto rounded-xl shadow-lg"
+                onLoad={() => setImageLoaded(true)}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ci8+CjxwYXRoIGQ9Ik0yMDAgMjAwQzIyMS4yMTcgMjAwIDIzOCAxODMuMjE3IDIzOCAxNjJDMjM4IDE0MC43ODMgMjIxLjIxNyAxMjQgMjAwIDEyNEMxNzguNzgzIDEyNCAxNjIgMTQwLjc4MyAxNjIgMTYyQzE2MiAxODMuMjE3IDE3OC43ODMgMjAwIDIwMCAyMDBaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
                 }}
               />
-              {/* Face overlays */}
-              {imageData.faces.map((face) => (
+              {/* Face overlays - only show when image is loaded */}
+              {imageLoaded && imageData.faces.map((face) => (
                 <div
                   key={face.face_id}
                   style={getFaceOverlayStyle(face)}
