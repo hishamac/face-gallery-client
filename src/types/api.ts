@@ -82,11 +82,23 @@ export interface ClusterResponse {
 }
 
 export interface Stats {
-  total_persons: number;
-  total_images: number;
-  total_faces: number;
-  images_with_faces?: number;
-  images_without_faces?: number;
+  status: "success" | "error";
+  data: {
+    total_persons: number;
+    total_images: number;
+    total_faces: number;
+    total_albums: number;
+    total_sections: number;
+    images_with_faces: number;
+    images_without_faces: number;
+    manual_face_assignments: number;
+    gallery_stats: {
+      face_coverage: number;
+      avg_faces_per_image: number;
+      avg_faces_per_person: number;
+    };
+  };
+  message: string;
 }
 
 export interface ImageSummary {
@@ -112,6 +124,7 @@ export interface ImageSummary {
 }
 
 export interface AllImagesResponse {
+  status: "success" | "error";
   images: ImageSummary[];
   total_images: number;
   images_with_faces: number;
@@ -119,6 +132,7 @@ export interface AllImagesResponse {
 }
 
 export interface MoveFaceResponse {
+  status: "success" | "error";
   message: string;
   face_id: string;
   from_person: string;
@@ -128,12 +142,29 @@ export interface MoveFaceResponse {
 }
 
 export interface MoveFaceToNewPersonResponse {
+  status: "success" | "error";
   message: string;
   face_id: string;
   from_person: string;
   new_person_id: string;
   new_person_name: string;
   deleted_empty_person?: string;
+}
+
+export interface DeleteFaceResponse {
+  status: "success" | "error";
+  message: string;
+  face_id: string;
+  from_person: string;
+  deleted_empty_person?: string;
+}
+
+export interface DeleteImageResponse {
+  status: "success" | "error";
+  message: string;
+  image_id: string;
+  deleted_faces_count: number;
+  deleted_persons: string[];
 }
 
 export interface ApiError {

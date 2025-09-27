@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { faceAPI } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Popover,
   PopoverContent,
@@ -21,9 +22,11 @@ import {
   Upload,
   X,
   Filter,
+  Trash2,
 } from "lucide-react";
 import type { ImageSummary } from "@/types/api";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { toast } from 'sonner';
 
 interface SearchMatch {
   face_id: string;
@@ -41,7 +44,10 @@ interface SearchMatch {
 }
 
 export default function Gallery() {
-  usePageTitle("Gallery");
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin/');
+  
+  usePageTitle(isAdminRoute ? "Images - Admin" : "Gallery");
   
   const [images, setImages] = useState<ImageSummary[]>([]);
   const [displayImages, setDisplayImages] = useState<ImageSummary[]>([]);
@@ -76,6 +82,11 @@ export default function Gallery() {
   // Image loading states
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
 
+  // Delete states (admin only)
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<ImageSummary | null>(null);
+
   // Image search state
   const [searchFile, setSearchFile] = useState<File | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -98,7 +109,11 @@ export default function Gallery() {
     try {
       setLoading(true);
       const data = await faceAPI.getAllImages();
-      setImages(data.images);
+      if (data.status === "success") {
+        setImages(data.images);
+      } else {
+        setError("Failed to load images: " + (data as any).message);
+      }
     } catch (err) {
       console.error("Failed to fetch images:", err);
       setError("Failed to load images");
@@ -110,7 +125,11 @@ export default function Gallery() {
   const fetchAlbums = async () => {
     try {
       const data = await faceAPI.getAllAlbums();
-      setAlbums(data.albums);
+      if (data.status === "success") {
+        setAlbums(data.albums);
+      } else {
+        console.error("Failed to fetch albums:", data.message);
+      }
     } catch (err) {
       console.error("Failed to fetch albums:", err);
     }
@@ -119,7 +138,11 @@ export default function Gallery() {
   const fetchSections = async () => {
     try {
       const data = await faceAPI.getAllSections();
-      setSections(data.sections);
+      if (data.status === "success") {
+        setSections(data.sections);
+      } else {
+        console.error("Failed to fetch sections:", data.message);
+      }
     } catch (err) {
       console.error("Failed to fetch sections:", err);
     }
@@ -193,6 +216,50 @@ export default function Gallery() {
     }
   };
 
+  // Delete image functions (admin only)
+  const showDeleteConfirmation = (image: ImageSummary) => {
+    if (!isAdminRoute) return;
+    setImageToDelete(image);
+  };
+
+  const deleteImage = async () => {
+    if (!imageToDelete) return;
+    
+    try {
+      setDeletingImageId(imageToDelete.image_id);
+      setDeleteLoading(true);
+      const result = await faceAPI.deleteImage(imageToDelete.image_id);
+      
+      // Check if the operation was successful
+      if (result.status === "success") {
+        setImageToDelete(null);
+        
+        // Show success message
+        if (result.deleted_persons.length > 0) {
+          toast.success(`Image deleted successfully! ${result.deleted_faces_count} faces and ${result.deleted_persons.length} empty persons were automatically deleted: ${result.deleted_persons.join(', ')}`);
+        } else {
+          toast.success(`Image deleted successfully! ${result.deleted_faces_count} faces were deleted.`);
+        }
+        
+        // Refresh the gallery
+        await fetchImages();
+      } else {
+        // Handle error response
+        toast.error(result.message || "Failed to delete image");
+      }
+      
+    } catch (err: any) {
+      console.error('Failed to delete image:', err);
+      // Show error message from API response or generic message
+      const errorMessage = err?.response?.data?.message || "Failed to delete image";
+      toast.error(errorMessage);
+    } finally {
+      setDeletingImageId(null);
+      setDeleteLoading(false);
+      setImageToDelete(null);
+    }
+  };
+
   if (loading)
     return (
       <div className="min-h-screen bg-background">
@@ -249,10 +316,13 @@ export default function Gallery() {
     ? searchResults.map((match) => ({
         image_id: match.image?.image_id || match.face_id,
         filename: match.image?.filename || "Unknown",
+        mime_type: "image/jpeg", // Default mime type
         faces_count: 1,
         persons_count: match.person ? 1 : 0,
-        upload_date: null,
-      }))
+        persons: match.person ? [{ person_id: match.person.person_id, person_name: match.person.person_name }] : [],
+        has_faces: true,
+        upload_date: undefined,
+      } as ImageSummary))
     : displayImages;
 
   return (
@@ -517,7 +587,7 @@ export default function Gallery() {
               key={image.image_id || index}
               className="break-inside-avoid mb-6"
             >
-              <div className="bauhaus-card group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 p-0">
+              <div className="bauhaus-card group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 p-0 relative">
                 <Link to={`/image/${image.image_id}`}>
                   <div className="relative overflow-hidden">
                     {imageLoadingStates[image.image_id] !== false && (
@@ -547,6 +617,27 @@ export default function Gallery() {
                     )}
                   </div>
                 </Link>
+                
+                {/* Delete button for admin mode */}
+                {isAdminRoute && (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      showDeleteConfirmation(image);
+                    }}
+                    size="sm"
+                    variant="destructive"
+                    className="absolute top-2 left-2 p-2 z-20"
+                    disabled={deleteLoading && deletingImageId === image.image_id}
+                  >
+                    {deleteLoading && deletingImageId === image.image_id ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
           ))}
@@ -575,6 +666,37 @@ export default function Gallery() {
           </div>
         )}
       </div>
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!imageToDelete} onOpenChange={() => setImageToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Image</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{imageToDelete?.filename}"? This action cannot be undone and will also delete all faces and persons associated with this image.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImageToDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={deleteImage}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Image'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -36,7 +36,11 @@ export default function Sections() {
   const loadSections = async () => {
     try {
       const data = await faceAPI.getAllSections();
-      setSections(data.sections);
+      if (data.status === "success") {
+        setSections(data.sections);
+      } else {
+        toast.error('Failed to load sections: ' + data.message);
+      }
     } catch (error) {
       console.error('Failed to load sections:', error);
       toast.error('Failed to load sections');
@@ -64,7 +68,7 @@ export default function Sections() {
       loadSections();
     } catch (error: any) {
       console.error('Failed to create section:', error);
-      toast.error(error.response?.data?.error || 'Failed to create section');
+      toast.error(error.response?.data?.message || 'Failed to create section');
     } finally {
       setCreateLoading(false);
     }
@@ -86,7 +90,7 @@ export default function Sections() {
       loadSections();
     } catch (error: any) {
       console.error('Failed to update section:', error);
-      toast.error(error.response?.data?.error || 'Failed to update section');
+      toast.error(error.response?.data?.message || 'Failed to update section');
     } finally {
       setEditLoading(false);
     }
@@ -109,7 +113,7 @@ export default function Sections() {
       loadSections();
     } catch (error: any) {
       console.error('Failed to delete section:', error);
-      toast.error(error.response?.data?.error || 'Failed to delete section');
+      toast.error(error.response?.data?.message || 'Failed to delete section');
     } finally {
       setDeleteLoading(false);
     }

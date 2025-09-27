@@ -6,6 +6,7 @@ import { Eye, Move } from 'lucide-react';
 import { faceAPI } from '@/services/api';
 import type { ImageDetails } from '@/types/api';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { toast } from 'sonner';
 
 const ImageDetail = () => {
   const { imageId } = useParams<{ imageId: string }>();
@@ -65,9 +66,13 @@ const ImageDetail = () => {
   const fetchAllPersons = async () => {
     try {
       const response = await faceAPI.getAllPersons();
-      // Map the data structure from API response to component expectation
-      const mappedPersons = response.persons.map(p => ({ id: p.person_id, name: p.person_name }));
-      setAllPersons(mappedPersons);
+      if (response.status === "success") {
+        // Map the data structure from API response to component expectation
+        const mappedPersons = response.persons.map(p => ({ id: p.person_id, name: p.person_name }));
+        setAllPersons(mappedPersons);
+      } else {
+        setError('Failed to load persons: ' + response.message);
+      }
     } catch (err) {
       console.error('Failed to fetch persons:', err);
       setError('Failed to load persons list');
@@ -87,22 +92,32 @@ const ImageDetail = () => {
       setMoveLoading(true);
       const result = await faceAPI.moveFaceToPerson(movingFaceId, targetPersonId);
       
-      // Close modal and reset state BEFORE redirecting
-      setShowMoveModal(false);
-      setMovingFaceId(null);
-      setMoveLoading(false);
-      
-      // Show message if original person was deleted
-      if (result.deleted_empty_person) {
-        alert(`Face moved successfully! Empty person "${result.deleted_empty_person}" was automatically deleted.`);
+      // Check if the operation was successful
+      if (result.status === "success") {
+        // Close modal and reset state BEFORE redirecting
+        setShowMoveModal(false);
+        setMovingFaceId(null);
+        setMoveLoading(false);
+        
+        // Show message if original person was deleted
+        if (result.deleted_empty_person) {
+          toast.success(`Face moved successfully! Empty person "${result.deleted_empty_person}" was automatically deleted.`);
+        } else {
+          toast.success("Face moved successfully!");
+        }
+        
+        // Redirect to the target person's page
+        navigate(`/person/${targetPersonId}`);
+      } else {
+        // Handle error response
+        toast.error(result.message || "Failed to move face");
+        setMoveLoading(false);
       }
       
-      // Redirect to the target person's page
-      navigate(`/person/${targetPersonId}`);
-      
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to move face:', err);
-      alert('Failed to move face');
+      const errorMessage = err?.response?.data?.message || "Failed to move face";
+      toast.error(errorMessage);
       setMoveLoading(false);
     }
   };
@@ -114,22 +129,32 @@ const ImageDetail = () => {
       setMoveLoading(true);
       const result = await faceAPI.moveFaceToNewPerson(movingFaceId);
       
-      // Close modal and reset state BEFORE redirecting
-      setShowMoveModal(false);
-      setMovingFaceId(null);
-      setMoveLoading(false);
-      
-      // Show message if original person was deleted
-      if (result.deleted_empty_person) {
-        alert(`Face moved to new person successfully! Empty person "${result.deleted_empty_person}" was automatically deleted.`);
+      // Check if the operation was successful
+      if (result.status === "success") {
+        // Close modal and reset state BEFORE redirecting
+        setShowMoveModal(false);
+        setMovingFaceId(null);
+        setMoveLoading(false);
+        
+        // Show message if original person was deleted
+        if (result.deleted_empty_person) {
+          toast.success(`Face moved to new person successfully! Empty person "${result.deleted_empty_person}" was automatically deleted.`);
+        } else {
+          toast.success("Face moved to new person successfully!");
+        }
+        
+        // Redirect to the new person's page
+        navigate(`/person/${result.new_person_id}`);
+      } else {
+        // Handle error response
+        toast.error(result.message || "Failed to move face to new person");
+        setMoveLoading(false);
       }
       
-      // Redirect to the new person's page
-      navigate(`/person/${result.new_person_id}`);
-      
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to move face to new person:', err);
-      alert('Failed to move face to new person');
+      const errorMessage = err?.response?.data?.message || "Failed to move face to new person";
+      toast.error(errorMessage);
       setMoveLoading(false);
     }
   };

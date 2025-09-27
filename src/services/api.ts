@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { UploadResponse, ClusterResponse, Stats, PersonDetails, ImageDetails, MoveFaceResponse, MoveFaceToNewPersonResponse } from '@/types/api';
+import type { UploadResponse, ClusterResponse, Stats, PersonDetails, ImageDetails, MoveFaceResponse, MoveFaceToNewPersonResponse, DeleteFaceResponse, DeleteImageResponse } from '@/types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
@@ -70,6 +70,7 @@ export const faceAPI = {
     sectionId?: string,
     onUploadProgress?: (progressEvent: any) => void
   ): Promise<{
+    status: "success" | "error";
     message: string;
     successful_uploads: number;
     total_files: number;
@@ -140,7 +141,7 @@ export const faceAPI = {
   },
 
   // Rename a person
-  renamePerson: async (personId: string, name: string): Promise<{ message: string; person_id: string; old_name: string; new_name: string }> => {
+  renamePerson: async (personId: string, name: string): Promise<{ status: "success" | "error"; message: string; person_id: string; old_name: string; new_name: string }> => {
     const response = await api.put(`/persons/${personId}/rename`, { name });
     return response.data;
   },
@@ -152,13 +153,28 @@ export const faceAPI = {
   },
 
   // Move face to new person
-  moveFaceToNewPerson: async (faceId: string): Promise<MoveFaceToNewPersonResponse> => {
-    const response = await api.put(`/faces/${faceId}/move-to-new`);
+  moveFaceToNewPerson: async (faceId: string, customName?: string): Promise<MoveFaceToNewPersonResponse> => {
+    const response = await api.put(`/faces/${faceId}/move-to-new`, {
+      custom_name: customName
+    });
+    return response.data;
+  },
+
+  // Delete face
+  deleteFace: async (faceId: string): Promise<DeleteFaceResponse> => {
+    const response = await api.delete(`/faces/${faceId}`);
+    return response.data;
+  },
+
+  // Delete image
+  deleteImage: async (imageId: string): Promise<DeleteImageResponse> => {
+    const response = await api.delete(`/images/${imageId}`);
     return response.data;
   },
 
   // Get list of all persons for dropdown and persons page
   getAllPersons: async (): Promise<{ 
+    status: "success" | "error";
     persons: Array<{ 
       person_id: string; 
       person_name: string; 
@@ -166,7 +182,8 @@ export const faceAPI = {
       total_images: number; 
       thumbnail: string | null;
     }>; 
-    total: number 
+    total: number;
+    message: string;
   }> => {
     const response = await api.get('/persons');
     return response.data;
@@ -174,6 +191,7 @@ export const faceAPI = {
 
   // Get all images (with and without faces)
   getAllImages: async (): Promise<{
+    status: "success" | "error";
     images: Array<{
       image_id: string;
       filename: string;
@@ -194,6 +212,7 @@ export const faceAPI = {
 
   // Albums API
   getAllAlbums: async (): Promise<{
+    status: "success" | "error";
     albums: Array<{
       album_id: string;
       name: string;
@@ -202,12 +221,14 @@ export const faceAPI = {
       image_count: number;
     }>;
     total: number;
+    message: string;
   }> => {
     const response = await api.get('/albums');
     return response.data;
   },
 
   createAlbum: async (name: string, description: string = ''): Promise<{
+    status: "success" | "error";
     message: string;
     album: {
       album_id: string;
@@ -221,6 +242,7 @@ export const faceAPI = {
   },
 
   updateAlbum: async (albumId: string, name: string, description: string = ''): Promise<{
+    status: "success" | "error";
     message: string;
   }> => {
     const response = await api.put(`/albums/${albumId}`, { name, description });
@@ -228,6 +250,7 @@ export const faceAPI = {
   },
 
   deleteAlbum: async (albumId: string): Promise<{
+    status: "success" | "error";
     message: string;
   }> => {
     const response = await api.delete(`/albums/${albumId}`);
@@ -236,6 +259,7 @@ export const faceAPI = {
 
   // Sections API
   getAllSections: async (): Promise<{
+    status: "success" | "error";
     sections: Array<{
       section_id: string;
       name: string;
@@ -244,12 +268,14 @@ export const faceAPI = {
       image_count: number;
     }>;
     total: number;
+    message: string;
   }> => {
     const response = await api.get('/sections');
     return response.data;
   },
 
   createSection: async (name: string, description: string = ''): Promise<{
+    status: "success" | "error";
     message: string;
     section: {
       section_id: string;
@@ -263,6 +289,7 @@ export const faceAPI = {
   },
 
   updateSection: async (sectionId: string, name: string, description: string = ''): Promise<{
+    status: "success" | "error";
     message: string;
   }> => {
     const response = await api.put(`/sections/${sectionId}`, { name, description });
@@ -270,6 +297,7 @@ export const faceAPI = {
   },
 
   deleteSection: async (sectionId: string): Promise<{
+    status: "success" | "error";
     message: string;
   }> => {
     const response = await api.delete(`/sections/${sectionId}`);

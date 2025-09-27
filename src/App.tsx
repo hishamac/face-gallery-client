@@ -60,6 +60,16 @@ function App() {
               <Persons />
             </AdminLayout>
           } />
+          <Route path="/admin/person/:personId" element={
+            <AdminLayout>
+              <PersonDetail />
+            </AdminLayout>
+          } />
+          <Route path="/admin/images" element={
+            <AdminLayout>
+              <Gallery />
+            </AdminLayout>
+          } />
         </Routes>
       </Router>
       <Toaster />

@@ -36,7 +36,11 @@ export default function Albums() {
   const loadAlbums = async () => {
     try {
       const data = await faceAPI.getAllAlbums();
-      setAlbums(data.albums);
+      if (data.status === "success") {
+        setAlbums(data.albums);
+      } else {
+        toast.error('Failed to load albums: ' + data.message);
+      }
     } catch (error) {
       console.error('Failed to load albums:', error);
       toast.error('Failed to load albums');
@@ -64,7 +68,7 @@ export default function Albums() {
       loadAlbums();
     } catch (error: any) {
       console.error('Failed to create album:', error);
-      toast.error(error.response?.data?.error || 'Failed to create album');
+      toast.error(error.response?.data?.message || 'Failed to create album');
     } finally {
       setCreateLoading(false);
     }
@@ -86,7 +90,7 @@ export default function Albums() {
       loadAlbums();
     } catch (error: any) {
       console.error('Failed to update album:', error);
-      toast.error(error.response?.data?.error || 'Failed to update album');
+      toast.error(error.response?.data?.message || 'Failed to update album');
     } finally {
       setEditLoading(false);
     }
@@ -109,7 +113,7 @@ export default function Albums() {
       loadAlbums();
     } catch (error: any) {
       console.error('Failed to delete album:', error);
-      toast.error(error.response?.data?.error || 'Failed to delete album');
+      toast.error(error.response?.data?.message || 'Failed to delete album');
     } finally {
       setDeleteLoading(false);
     }

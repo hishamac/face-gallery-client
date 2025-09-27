@@ -65,7 +65,11 @@ export default function Persons() {
     try {
       setLoading(true);
       const data = await faceAPI.getAllPersons();
-      setPersonsData(data);
+      if (data.status === "success") {
+        setPersonsData(data);
+      } else {
+        setError("Failed to load persons: " + data.message);
+      }
     } catch (err) {
       console.error("Failed to fetch persons:", err);
       setError("Failed to load persons");
@@ -93,24 +97,30 @@ export default function Persons() {
     try {
       setUpdating(personId);
       // Make API call to update person name
-      await faceAPI.renamePerson(personId, editingName.trim());
+      const result = await faceAPI.renamePerson(personId, editingName.trim());
       
-      // Update local state
-      if (personsData) {
-        const updatedPersons = personsData.persons.map(person => 
-          person.person_id === personId 
-            ? { ...person, person_name: editingName.trim() }
-            : person
-        );
-        setPersonsData({ ...personsData, persons: updatedPersons });
+      // Check if the operation was successful
+      if (result.status === "success") {
+        // Update local state
+        if (personsData) {
+          const updatedPersons = personsData.persons.map(person => 
+            person.person_id === personId 
+              ? { ...person, person_name: editingName.trim() }
+              : person
+          );
+          setPersonsData({ ...personsData, persons: updatedPersons });
+        }
+        
+        setEditingPersonId(null);
+        setEditingName("");
+        toast.success(result.message || "Person name updated successfully");
+      } else {
+        // Handle error response
+        toast.error(result.message || "Failed to update person name");
       }
-      
-      setEditingPersonId(null);
-      setEditingName("");
-      toast.success("Person name updated successfully");
     } catch (err: any) {
       console.error("Failed to update person name:", err);
-      const errorMessage = err.response?.data?.error || err.message || "Failed to update person name";
+      const errorMessage = err.response?.data?.message || err.message || "Failed to update person name";
       toast.error(errorMessage);
     } finally {
       setUpdating(null);
@@ -226,7 +236,7 @@ export default function Persons() {
             {(debouncedSearchTerm ? filteredPersons : personsData.persons).map((person) => (
               <div key={person.person_id}>
                 <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-                  <Link to={`/person/${person.person_id}`} className="block">
+                  <Link to={isAdminRoute ? `/admin/person/${person.person_id}` : `/person/${person.person_id}`} className="block">
                     <div className="relative aspect-square bg-muted">
                       {person.thumbnail ? (
                         <>
