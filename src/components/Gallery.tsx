@@ -73,6 +73,9 @@ export default function Gallery() {
   const [selectedSection, setSelectedSection] = useState("All Sections");
   const [selectedAlbum, setSelectedAlbum] = useState("All Albums");
 
+  // Image loading states
+  const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
+
   // Image search state
   const [searchFile, setSearchFile] = useState<File | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -517,12 +520,21 @@ export default function Gallery() {
               <div className="bauhaus-card group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 p-0">
                 <Link to={`/image/${image.image_id}`}>
                   <div className="relative overflow-hidden">
+                    {imageLoadingStates[image.image_id] !== false && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
                     <img
                       alt={image.filename}
                       loading="lazy"
-                      className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                      className={`w-full h-auto object-cover transition-all duration-500 group-hover:scale-105 ${
+                        imageLoadingStates[image.image_id] === false ? 'opacity-100' : 'opacity-0'
+                      }`}
                       src={faceAPI.getImageUrl(image.image_id)}
                       style={{ color: "transparent" }}
+                      onLoad={() => setImageLoadingStates(prev => ({ ...prev, [image.image_id]: false }))}
+                      onError={() => setImageLoadingStates(prev => ({ ...prev, [image.image_id]: false }))}
                     />
                     <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 

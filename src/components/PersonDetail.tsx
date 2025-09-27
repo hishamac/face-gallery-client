@@ -26,6 +26,10 @@ const PersonDetail = () => {
   const [allPersons, setAllPersons] = useState<Array<{ id: string; name: string }>>([]);
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [moveLoading, setMoveLoading] = useState(false);
+  
+  // Image loading states
+  const [faceLoadingStates, setFaceLoadingStates] = useState<Record<string, boolean>>({});
+  const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (personId) {
@@ -330,15 +334,26 @@ const PersonDetail = () => {
                 <div key={face.face_id} className="group relative">
                   <div className="aspect-square bg-gray-200 rounded-xl overflow-hidden shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
                     {face.cropped_face_filename && (
-                      <img
-                        src={faceAPI.getFaceUrl(face.face_id)}
-                        alt="Cropped face"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik01MCA2NS41QzU4LjI4NDMgNjUuNSA2NSA1OC43ODQzIDY1IDUwLjVDNjUgNDIuMjE1NyA1OC4yODQzIDM1LjUgNTAgMzUuNUM0MS43MTU3IDM1LjUgMzUgNDIuMjE1NyAzNSA1MC41QzM1IDU4Ljc4NDMgNDEuNzE1NyA2NS41IDUwIDY1LjVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
-                        }}
-                      />
+                      <>
+                        {faceLoadingStates[face.face_id] !== false && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                        <img
+                          src={faceAPI.getFaceUrl(face.face_id)}
+                          alt="Cropped face"
+                          className={`w-full h-full object-cover transition-opacity duration-300 ${
+                            faceLoadingStates[face.face_id] === false ? 'opacity-100' : 'opacity-0'
+                          }`}
+                          onLoad={() => setFaceLoadingStates(prev => ({ ...prev, [face.face_id]: false }))}
+                          onError={(e) => {
+                            setFaceLoadingStates(prev => ({ ...prev, [face.face_id]: false }));
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik01MCA2NS41QzU4LjI4NDMgNjUuNSA2NSA1OC43ODQzIDY1IDUwLjVDNjUgNDIuMjE1NyA1OC4yODQzIDM1LjUgNTAgMzUuNUM0MS43MTU3IDM1LjUgMzUgNDIuMjE1NyAzNSA1MC41QzM1IDU4Ljc4NDMgNDEuNzE1NyA2NS41IDUwIDY1LjVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
+                          }}
+                        />
+                      </>
                     )}
                   </div>
                   
@@ -385,13 +400,22 @@ const PersonDetail = () => {
                   <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer">
                     <Link to={`/image/${image.image_id}`}>
                       <div className="relative overflow-hidden">
+                        {imageLoadingStates[image.image_id] !== false && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+                            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
                         <img
                           src={faceAPI.getImageUrl(image.image_id)}
                           alt={image.filename}
-                          className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                          className={`w-full h-auto object-cover transition-all duration-500 group-hover:scale-105 ${
+                            imageLoadingStates[image.image_id] === false ? 'opacity-100' : 'opacity-0'
+                          }`}
+                          onLoad={() => setImageLoadingStates(prev => ({ ...prev, [image.image_id]: false }))}
                           onError={(e) => {
+                            setImageLoadingStates(prev => ({ ...prev, [image.image_id]: false }));
                             const target = e.target as HTMLImageElement;
-                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTM1QzE2My4yNTQgMTM1IDE3NCAxMjQuMjU0IDE3NCAxMTFDMTc0IDk3Ljc0NTggMTYzLjI1NCA4NyAxNTAgODdDMTM2Ljc0NiA4NyAxMjYgOTcuNzQ1OCAxMjYgMTExQzEyNiAxMjQuMjU0IDEzNi43NDYgMTM1IDE1MCAxMzVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
+                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi0vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTM1QzE2My4yNTQgMTM1IDE3NCAxMjQuMjU0IDE3NCAxMTFDMTc0IDk3Ljc0NTggMTYzLjI1NCA4NyAxNTAgODdDMTM2Ljc0NiA4NyAxMjYgOTcuNzQ1OCAxMjYgMTExQzEyNiAxMjQuMjU0IDEzNi43NDYgMTM1IDE1MCAxMzVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
                           }}
                         />
                         <div className="absolute inset-0 bg-gray-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

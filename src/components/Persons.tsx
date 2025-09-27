@@ -37,6 +37,7 @@ export default function Persons() {
   const [editingPersonId, setEditingPersonId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchPersons();
@@ -228,20 +229,31 @@ export default function Persons() {
                   <Link to={`/person/${person.person_id}`} className="block">
                     <div className="relative aspect-square bg-muted">
                       {person.thumbnail ? (
-                        <img
-                          src={faceAPI.getFaceUrl(person.thumbnail)}
-                          alt={`${person.person_name} face`}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          onError={(e) => {
-                            const img = e.target as HTMLImageElement;
-                            img.style.display = "none";
-                            const parent = img.parentElement;
-                            if (parent) {
-                              parent.innerHTML =
-                                '<div class="w-full h-full flex items-center justify-center text-muted-foreground"><div class="text-center"><div class="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div><p class="text-sm">No Face</p></div></div>';
-                            }
-                          }}
-                        />
+                        <>
+                          {imageLoadingStates[person.person_id] !== false && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                          )}
+                          <img
+                            src={faceAPI.getFaceUrl(person.thumbnail)}
+                            alt={`${person.person_name} face`}
+                            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+                              imageLoadingStates[person.person_id] === false ? 'opacity-100' : 'opacity-0'
+                            }`}
+                            onLoad={() => setImageLoadingStates(prev => ({ ...prev, [person.person_id]: false }))}
+                            onError={(e) => {
+                              setImageLoadingStates(prev => ({ ...prev, [person.person_id]: false }));
+                              const img = e.target as HTMLImageElement;
+                              img.style.display = "none";
+                              const parent = img.parentElement;
+                              if (parent) {
+                                parent.innerHTML =
+                                  '<div class="w-full h-full flex items-center justify-center text-muted-foreground"><div class="text-center"><div class="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div><p class="text-sm">No Face</p></div></div>';
+                              }
+                            }}
+                          />
+                        </>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                           <div className="text-center">

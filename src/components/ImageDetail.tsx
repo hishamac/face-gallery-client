@@ -26,6 +26,9 @@ const ImageDetail = () => {
   const [allPersons, setAllPersons] = useState<Array<{ id: string; name: string }>>([]);
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [moveLoading, setMoveLoading] = useState(false);
+  
+  // Face loading states
+  const [faceLoadingStates, setFaceLoadingStates] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (imageId) {
@@ -309,11 +312,20 @@ const ImageDetail = () => {
               {imageData.faces.map((face, index) => (
                 <div key={face.face_id} className="group relative">
                   <div className="aspect-square bg-gray-200 rounded-xl overflow-hidden shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
+                    {faceLoadingStates[face.face_id] !== false && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
                     <img
                       src={faceAPI.getFaceUrl(face.face_id)}
                       alt={`Face ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover transition-opacity duration-300 ${
+                        faceLoadingStates[face.face_id] === false ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      onLoad={() => setFaceLoadingStates(prev => ({ ...prev, [face.face_id]: false }))}
                       onError={(e) => {
+                        setFaceLoadingStates(prev => ({ ...prev, [face.face_id]: false }));
                         const target = e.target as HTMLImageElement;
                         target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ci8+CjxwYXRoIGQ9Ik01MCA2NS41QzU4LjI4NDMgNjUuNSA2NSA1OC43ODQzIDY1IDUwLjVDNjUgNDIuMjE1NyA1OC4yODQzIDM1LjUgNTAgMzUuNUM0MS43MTU3IDM1LjUgMzUgNDIuMjE1NyAzNSA1MC41QzM1IDU4Ljc4NDMgNDEuNzE1NyA2NS41IDUwIDY1LjVaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
                       }}
