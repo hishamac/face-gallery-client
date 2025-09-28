@@ -3,6 +3,7 @@ export interface Face {
   image_path: string;
   filename: string;
   cropped_face_filename?: string;
+  face_base64: string;  // Add base64 data for face
   face_location?: {
     top: number;
     right: number;
@@ -27,6 +28,7 @@ export interface PersonDetails {
     face_id: string;
     image_id: string;
     cropped_face_filename: string;
+    face_base64: string;  // Add base64 data for face
     face_location: {
       top: number;
       right: number;
@@ -38,6 +40,7 @@ export interface PersonDetails {
     image_id: string;
     filename: string;
     mime_type: string;
+    image_base64: string;  // Add base64 data for image
   }[];
 }
 
@@ -45,10 +48,12 @@ export interface ImageDetails {
   image_id: string;
   filename: string;
   mime_type: string;
+  image_base64: string;  // Add base64 data for main image
   total_faces: number;
   faces: {
     face_id: string;
     cropped_face_filename: string;
+    face_base64: string;  // Add base64 data for face
     face_location: {
       top: number;
       right: number;
@@ -105,6 +110,7 @@ export interface ImageSummary {
   image_id: string;
   filename: string;
   mime_type: string;
+  image_base64: string;  // Add base64 data for image
   faces_count: number;
   persons_count: number;
   persons: Array<{

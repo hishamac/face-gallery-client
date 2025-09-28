@@ -296,7 +296,7 @@ const ImageDetail = () => {
             <div className="relative inline-block w-full">
               <img
                 ref={imageRef}
-                src={faceAPI.getImageUrl(imageData.image_id)}
+                src={`data:${imageData.mime_type};base64,${imageData.image_base64}`}  // Use base64 data instead of URL
                 alt={imageData.filename}
                 className="w-full h-auto rounded-xl shadow-lg"
                 onLoad={() => setImageLoaded(true)}
@@ -343,7 +343,7 @@ const ImageDetail = () => {
                       </div>
                     )}
                     <img
-                      src={faceAPI.getFaceUrl(face.face_id)}
+                      src={`data:image/jpeg;base64,${face.face_base64}`}  // Use base64 data instead of URL
                       alt={`Face ${index + 1}`}
                       className={`w-full h-full object-cover transition-opacity duration-300 ${
                         faceLoadingStates[face.face_id] === false ? 'opacity-100' : 'opacity-0'

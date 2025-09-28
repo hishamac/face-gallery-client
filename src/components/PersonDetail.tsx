@@ -476,7 +476,7 @@ const PersonDetail = () => {
                           </div>
                         )}
                         <img
-                          src={faceAPI.getFaceUrl(face.face_id)}
+                          src={`data:image/jpeg;base64,${face.face_base64}`}  // Use base64 data instead of URL
                           alt="Cropped face"
                           className={`w-full h-full object-cover transition-opacity duration-300 ${
                             faceLoadingStates[face.face_id] === false
@@ -566,7 +566,7 @@ const PersonDetail = () => {
                           </div>
                         )}
                         <img
-                          src={faceAPI.getImageUrl(image.image_id)}
+                          src={`data:${image.mime_type};base64,${image.image_base64}`}  // Use base64 data instead of URL
                           alt={image.filename}
                           className={`w-full h-auto object-cover transition-all duration-500 group-hover:scale-105 ${
                             imageLoadingStates[image.image_id] === false

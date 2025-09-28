@@ -246,7 +246,7 @@ export default function Persons() {
                             </div>
                           )}
                           <img
-                            src={faceAPI.getFaceUrl(person.thumbnail)}
+                            src={`data:image/jpeg;base64,${person.thumbnail}`}  // Use base64 data directly
                             alt={`${person.person_name} face`}
                             className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
                               imageLoadingStates[person.person_id] === false ? 'opacity-100' : 'opacity-0'

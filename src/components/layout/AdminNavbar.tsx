@@ -11,7 +11,7 @@ import {
   Menu,
   MoreHorizontal,
   Section,
-  Users
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -19,6 +19,7 @@ import { Button } from "../ui/button";
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard, primary: true },
+  { name: "Images", href: "/admin/images", icon: Image, primary: true },
   { name: "Albums", href: "/admin/albums", icon: FolderOpen, primary: true },
   { name: "Sections", href: "/admin/sections", icon: Section, primary: true },
   { name: "Persons", href: "/admin/persons", icon: Users, primary: true },

@@ -601,7 +601,7 @@ export default function Gallery() {
                       className={`w-full h-auto object-cover transition-all duration-500 group-hover:scale-105 ${
                         imageLoadingStates[image.image_id] === false ? 'opacity-100' : 'opacity-0'
                       }`}
-                      src={faceAPI.getImageUrl(image.image_id)}
+                      src={`data:${image.mime_type};base64,${image.image_base64}`}  // Use base64 data instead of URL
                       style={{ color: "transparent" }}
                       onLoad={() => setImageLoadingStates(prev => ({ ...prev, [image.image_id]: false }))}
                       onError={() => setImageLoadingStates(prev => ({ ...prev, [image.image_id]: false }))}

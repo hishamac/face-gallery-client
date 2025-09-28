@@ -180,7 +180,7 @@ export const faceAPI = {
       person_name: string; 
       total_faces: number; 
       total_images: number; 
-      thumbnail: string | null;
+      thumbnail: string | null;  // Now contains base64 data instead of face_id
     }>; 
     total: number;
     message: string;
@@ -196,6 +196,7 @@ export const faceAPI = {
       image_id: string;
       filename: string;
       mime_type: string;
+      image_base64: string;  // Add base64 data for image
       faces_count: number;
       persons_count: number;
       persons: Array<{ person_id: string; person_name: string }>;
