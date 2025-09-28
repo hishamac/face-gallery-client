@@ -161,14 +161,34 @@ export default function Gallery() {
       );
     }
 
-    // Filter by section (you would implement actual section logic here)
+    // Filter by section
     if (selectedSection !== "All Sections") {
-      // Implement section filtering logic based on your data structure
+      filtered = filtered.filter((image) => {
+        // If image has a section and it matches the selected one
+        if (image.section && image.section.section_name === selectedSection) {
+          return true;
+        }
+        // If "No Section" is selected and image has no section
+        if (selectedSection === "No Section" && !image.section) {
+          return true;
+        }
+        return false;
+      });
     }
 
-    // Filter by album (you would implement actual album logic here)
+    // Filter by album
     if (selectedAlbum !== "All Albums") {
-      // Implement album filtering logic based on your data structure
+      filtered = filtered.filter((image) => {
+        // If image has an album and it matches the selected one
+        if (image.album && image.album.album_name === selectedAlbum) {
+          return true;
+        }
+        // If "No Album" is selected and image has no album
+        if (selectedAlbum === "No Album" && !image.album) {
+          return true;
+        }
+        return false;
+      });
     }
 
     setDisplayImages(filtered);
@@ -454,6 +474,14 @@ export default function Gallery() {
                       >
                         All Sections
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setSelectedSection("No Section")}
+                        className={
+                          selectedSection === "No Section" ? "bg-accent" : ""
+                        }
+                      >
+                        No Section
+                      </DropdownMenuItem>
                       {sections.map((section) => (
                         <DropdownMenuItem
                           key={section.section_id}
@@ -498,6 +526,14 @@ export default function Gallery() {
                         }
                       >
                         All Albums
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setSelectedAlbum("No Album")}
+                        className={
+                          selectedAlbum === "No Album" ? "bg-accent" : ""
+                        }
+                      >
+                        No Album
                       </DropdownMenuItem>
                       {albums.map((album) => (
                         <DropdownMenuItem

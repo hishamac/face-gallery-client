@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Eye, Move, RefreshCw, Loader2, Trash2 } from 'lucide-react';
+import { Eye, RefreshCw, Loader2, Trash2 } from 'lucide-react';
 import { faceAPI } from '@/services/api';
 import type { ImageDetails } from '@/types/api';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -33,12 +33,6 @@ const ImageDetail = () => {
   const [selectedFace, setSelectedFace] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
-  
-  // Face moving states
-  const [movingFaceId, setMovingFaceId] = useState<string | null>(null);
-  const [allPersons, setAllPersons] = useState<Array<{ id: string; name: string }>>([]);
-  const [showMoveModal, setShowMoveModal] = useState(false);
-  const [moveLoading, setMoveLoading] = useState(false);
   
   // Face loading states
   const [faceLoadingStates, setFaceLoadingStates] = useState<Record<string, boolean>>({});
@@ -125,108 +119,6 @@ const ImageDetail = () => {
         navigate(isAdminRoute ? `/admin/person/${personId}` : `/person/${personId}`);
       }, 300);
     }
-  };
-
-  // Face moving functions
-  const fetchAllPersons = async () => {
-    try {
-      const response = await faceAPI.getAllPersons();
-      if (response.status === "success") {
-        // Map the data structure from API response to component expectation
-        const mappedPersons = response.persons.map(p => ({ id: p.person_id, name: p.person_name }));
-        setAllPersons(mappedPersons);
-      } else {
-        setError('Failed to load persons: ' + response.message);
-      }
-    } catch (err) {
-      console.error('Failed to fetch persons:', err);
-      setError('Failed to load persons list');
-    }
-  };
-
-  const startMoveFace = async (faceId: string) => {
-    setMovingFaceId(faceId);
-    await fetchAllPersons();
-    setShowMoveModal(true);
-  };
-
-  const moveFaceToPerson = async (targetPersonId: string) => {
-    if (!movingFaceId) return;
-    
-    try {
-      setMoveLoading(true);
-      const result = await faceAPI.moveFaceToPerson(movingFaceId, targetPersonId);
-      
-      // Check if the operation was successful
-      if (result.status === "success") {
-        // Close modal and reset state BEFORE redirecting
-        setShowMoveModal(false);
-        setMovingFaceId(null);
-        setMoveLoading(false);
-        
-        // Show message if original person was deleted
-        if (result.deleted_empty_person) {
-          toast.success(`Face moved successfully! Empty person "${result.deleted_empty_person}" was automatically deleted.`);
-        } else {
-          toast.success("Face moved successfully!");
-        }
-        
-        // Redirect to the target person's page
-        navigate(isAdminRoute ? `/admin/person/${targetPersonId}` : `/person/${targetPersonId}`);
-      } else {
-        // Handle error response
-        toast.error(result.message || "Failed to move face");
-        setMoveLoading(false);
-      }
-      
-    } catch (err: any) {
-      console.error('Failed to move face:', err);
-      const errorMessage = err?.response?.data?.message || "Failed to move face";
-      toast.error(errorMessage);
-      setMoveLoading(false);
-    }
-  };
-
-  const moveFaceToNewPerson = async () => {
-    if (!movingFaceId) return;
-    
-    try {
-      setMoveLoading(true);
-      const result = await faceAPI.moveFaceToNewPerson(movingFaceId);
-      
-      // Check if the operation was successful
-      if (result.status === "success") {
-        // Close modal and reset state BEFORE redirecting
-        setShowMoveModal(false);
-        setMovingFaceId(null);
-        setMoveLoading(false);
-        
-        // Show message if original person was deleted
-        if (result.deleted_empty_person) {
-          toast.success(`Face moved to new person successfully! Empty person "${result.deleted_empty_person}" was automatically deleted.`);
-        } else {
-          toast.success("Face moved to new person successfully!");
-        }
-        
-        // Redirect to the new person's page
-        navigate(isAdminRoute ? `/admin/person/${result.new_person_id}` : `/person/${result.new_person_id}`);
-      } else {
-        // Handle error response
-        toast.error(result.message || "Failed to move face to new person");
-        setMoveLoading(false);
-      }
-      
-    } catch (err: any) {
-      console.error('Failed to move face to new person:', err);
-      const errorMessage = err?.response?.data?.message || "Failed to move face to new person";
-      toast.error(errorMessage);
-      setMoveLoading(false);
-    }
-  };
-
-  const cancelMoveFace = () => {
-    setShowMoveModal(false);
-    setMovingFaceId(null);
   };
 
   // Delete face function (admin only)
@@ -528,20 +420,12 @@ const ImageDetail = () => {
                         </Button>
                       </Link>
                     )}
-                    <Button
-                      onClick={() => startMoveFace(face.face_id)}
-                      size="sm"
-                      variant="outline"
-                      className={`${face.person && !isAdminRoute ? 'flex-1' : isAdminRoute ? 'flex-1' : 'w-full'} p-2 bg-white border-gray-300 hover:bg-gray-50 shadow-sm`}
-                    >
-                      <Move className="h-4 w-4" />
-                    </Button>
                     {isAdminRoute && (
                       <Button
                         onClick={() => showDeleteConfirmation(face.face_id)}
                         size="sm"
                         variant="outline"
-                        className="flex-1 p-2 bg-white border-red-300 hover:bg-red-50 shadow-sm text-red-600 hover:text-red-700"
+                        className={`${face.person ? 'flex-1' : 'w-full'} p-2 bg-white border-red-300 hover:bg-red-50 shadow-sm text-red-600 hover:text-red-700`}
                         disabled={deleteLoading && deletingFaceId === face.face_id}
                       >
                         {deleteLoading && deletingFaceId === face.face_id ? (
@@ -560,63 +444,6 @@ const ImageDetail = () => {
       </div>
       
 
-      {/* Move Face Modal */}
-      {showMoveModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Move Face</h3>
-            
-            <div className="space-y-6">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-3">Move to existing person:</h4>
-                <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
-                  {allPersons.length === 0 ? (
-                    <p className="text-gray-500 text-sm py-4 text-center bg-gray-50 rounded-lg">
-                      No persons available
-                    </p>
-                  ) : (
-                    allPersons.map((person) => (
-                      <Button
-                        key={person.id}
-                        onClick={() => moveFaceToPerson(person.id)}
-                        disabled={moveLoading}
-                        variant="outline"
-                        className="w-full justify-start text-left bg-white border-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm truncate"
-                        title={person.name}
-                      >
-                        <span className="truncate">{person.name}</span>
-                      </Button>
-                    ))
-                  )}
-                </div>
-              </div>
-              
-              <div className="border-t border-gray-200 pt-4">
-                <h4 className="font-semibold text-gray-800 mb-3">Or create new person:</h4>
-                <Button
-                  onClick={moveFaceToNewPerson}
-                  disabled={moveLoading}
-                  className="w-full bg-gray-600 hover:bg-gray-700 text-white shadow-md"
-                >
-                  {moveLoading ? 'Moving...' : 'Move to New Person'}
-                </Button>
-              </div>
-            </div>
-            
-            <div className="flex gap-3 mt-8">
-              <Button
-                onClick={cancelMoveFace}
-                variant="outline"
-                className="flex-1 bg-white border-gray-300 hover:bg-gray-50 shadow-sm"
-                disabled={moveLoading}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent>

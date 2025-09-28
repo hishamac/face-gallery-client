@@ -386,7 +386,7 @@ const PersonDetail = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              {isRenaming ? (
+              {isRenaming && isAdminRoute ? (
                 <div className="flex items-center gap-3 flex-wrap">
                   <input
                     type="text"
@@ -426,14 +426,16 @@ const PersonDetail = () => {
                   >
                     {person.person_name}
                   </h1>
-                  <Button
-                    onClick={startRenaming}
-                    variant="outline"
-                    size="sm"
-                    className="bg-white border-gray-300 hover:bg-gray-50 text-gray-700 shadow-md"
-                  >
-                    Rename
-                  </Button>
+                  {isAdminRoute && (
+                    <Button
+                      onClick={startRenaming}
+                      variant="outline"
+                      size="sm"
+                      className="bg-white border-gray-300 hover:bg-gray-50 text-gray-700 shadow-md"
+                    >
+                      Rename
+                    </Button>
+                  )}
                 </div>
               )}
               <p className="text-gray-600 mt-3 text-lg">
@@ -514,14 +516,16 @@ const PersonDetail = () => {
                         <Eye className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Button
-                      onClick={() => startMoveFace(face.face_id)}
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 p-2 bg-white border-gray-300 hover:bg-gray-50 shadow-sm"
-                    >
-                      <Move className="h-4 w-4" />
-                    </Button>
+                    {isAdminRoute && (
+                      <Button
+                        onClick={() => startMoveFace(face.face_id)}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 p-2 bg-white border-gray-300 hover:bg-gray-50 shadow-sm"
+                      >
+                        <Move className="h-4 w-4" />
+                      </Button>
+                    )}
                     {isAdminRoute && (
                       <Button
                         onClick={() => showDeleteConfirmation(face.face_id)}
