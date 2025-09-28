@@ -48,7 +48,7 @@ interface SearchMatch {
 
 export default function Gallery() {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin/');
+  const isAdminRoute = location.pathname.startsWith('/admin/')
   
   usePageTitle(isAdminRoute ? "Images - Admin" : "Gallery");
   
@@ -592,7 +592,7 @@ export default function Gallery() {
               className="break-inside-avoid mb-6"
             >
               <div className="bauhaus-card group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 p-0 relative">
-                <Link to={isAdminRoute ? `/admin/images/${image.image_id}` : `/image/${image.image_id}`}>
+                <Link to={isAdminRoute ? `/admin/image/${image.image_id}` : `/image/${image.image_id}`}>
                   <div className="relative overflow-hidden">
                     {imageLoadingStates[image.image_id] !== false && (
                       <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
