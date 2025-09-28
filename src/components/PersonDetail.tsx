@@ -505,7 +505,7 @@ const PersonDetail = () => {
 
                   {/* Action buttons */}
                   <div className="flex gap-2 mt-3">
-                    <Link to={`/image/${face.image_id}`} className="flex-1">
+                    <Link to={isAdminRoute ? `/admin/image/${face.image_id}` : `/image/${face.image_id}`} className="flex-1">
                       <Button
                         size="sm"
                         variant="outline"
@@ -558,7 +558,7 @@ const PersonDetail = () => {
               {person.images.map((image) => (
                 <div key={image.image_id} className="break-inside-avoid mb-6">
                   <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer">
-                    <Link to={`/image/${image.image_id}`}>
+                    <Link to={isAdminRoute ? `/admin/image/${image.image_id}` : `/image/${image.image_id}`}>
                       <div className="relative overflow-hidden">
                         {imageLoadingStates[image.image_id] !== false && (
                           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">

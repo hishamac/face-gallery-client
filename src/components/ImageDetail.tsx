@@ -122,7 +122,7 @@ const ImageDetail = () => {
     if (personId) {
       // Navigate to person detail page after a short delay to show selection
       setTimeout(() => {
-        navigate(`/person/${personId}`);
+        navigate(isAdminRoute ? `/admin/person/${personId}` : `/person/${personId}`);
       }, 300);
     }
   };
@@ -172,7 +172,7 @@ const ImageDetail = () => {
         }
         
         // Redirect to the target person's page
-        navigate(`/person/${targetPersonId}`);
+        navigate(isAdminRoute ? `/admin/person/${targetPersonId}` : `/person/${targetPersonId}`);
       } else {
         // Handle error response
         toast.error(result.message || "Failed to move face");
@@ -209,7 +209,7 @@ const ImageDetail = () => {
         }
         
         // Redirect to the new person's page
-        navigate(`/person/${result.new_person_id}`);
+        navigate(isAdminRoute ? `/admin/person/${result.new_person_id}` : `/person/${result.new_person_id}`);
       } else {
         // Handle error response
         toast.error(result.message || "Failed to move face to new person");
@@ -518,7 +518,7 @@ const ImageDetail = () => {
                   {/* Action buttons */}
                   <div className="flex gap-2 mt-3">
                     {face.person && (
-                      <Link to={`/person/${face.person.person_id}`} className="flex-1">
+                      <Link to={isAdminRoute ? `/admin/person/${face.person.person_id}` : `/person/${face.person.person_id}`} className="flex-1">
                         <Button
                           size="sm"
                           variant="outline"

@@ -70,7 +70,7 @@ function App() {
               <Gallery />
             </AdminLayout>
           } />
-          <Route path="/admin/images/:imageId" element={
+          <Route path="/admin/image/:imageId" element={
             <AdminLayout>
               <ImageDetail />
             </AdminLayout>
