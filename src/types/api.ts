@@ -49,6 +49,8 @@ export interface ImageDetails {
   filename: string;
   mime_type: string;
   image_base64: string;  // Add base64 data for main image
+  upload_date: string;   // Add upload date
+  has_faces: boolean;    // Add has_faces flag
   total_faces: number;
   faces: {
     face_id: string;
@@ -64,6 +66,8 @@ export interface ImageDetails {
       person_id: string;
       person_name: string;
     } | null;
+    person_name?: string;  // Add direct person_name for convenience
+    confidence?: number;   // Add confidence score
   }[];
 }
 

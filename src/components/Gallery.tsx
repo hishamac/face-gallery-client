@@ -39,8 +39,11 @@ interface SearchMatch {
   image?: {
     image_id: string;
     filename: string;
+    mime_type: string;
+    image_base64: string;  // Add base64 image data
   };
   cropped_face_filename?: string;
+  face_base64: string;  // Add base64 face data
 }
 
 export default function Gallery() {
@@ -316,7 +319,8 @@ export default function Gallery() {
     ? searchResults.map((match) => ({
         image_id: match.image?.image_id || match.face_id,
         filename: match.image?.filename || "Unknown",
-        mime_type: "image/jpeg", // Default mime type
+        mime_type: match.image?.mime_type || "image/jpeg",
+        image_base64: match.image?.image_base64 || "",  // Include base64 data from search results
         faces_count: 1,
         persons_count: match.person ? 1 : 0,
         persons: match.person ? [{ person_id: match.person.person_id, person_name: match.person.person_name }] : [],
@@ -588,7 +592,7 @@ export default function Gallery() {
               className="break-inside-avoid mb-6"
             >
               <div className="bauhaus-card group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 p-0 relative">
-                <Link to={`/image/${image.image_id}`}>
+                <Link to={isAdminRoute ? `/admin/images/${image.image_id}` : `/image/${image.image_id}`}>
                   <div className="relative overflow-hidden">
                     {imageLoadingStates[image.image_id] !== false && (
                       <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">

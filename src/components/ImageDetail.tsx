@@ -1,8 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Move } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Eye, Move, RefreshCw, Loader2, Trash2 } from 'lucide-react';
 import { faceAPI } from '@/services/api';
 import type { ImageDetails } from '@/types/api';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -11,9 +19,13 @@ import { toast } from 'sonner';
 const ImageDetail = () => {
   const { imageId } = useParams<{ imageId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin/');
+  
   const [imageData, setImageData] = useState<ImageDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [redetectLoading, setRedetectLoading] = useState(false);
   
   // Set page title dynamically based on image filename
   usePageTitle(imageData ? imageData.filename : "Image Details");
@@ -30,12 +42,43 @@ const ImageDetail = () => {
   
   // Face loading states
   const [faceLoadingStates, setFaceLoadingStates] = useState<Record<string, boolean>>({});
+  
+  // Responsive overlay refresh trigger
+  const [overlayRefresh, setOverlayRefresh] = useState(0);
+  
+  // Delete face states (admin only)
+  const [deletingFaceId, setDeletingFaceId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [faceToDelete, setFaceToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (imageId) {
       fetchImageDetails(imageId);
     }
   }, [imageId]);
+
+  // Add resize listener to make bounding boxes responsive
+  useEffect(() => {
+    const handleResize = () => {
+      if (imageLoaded && imageRef.current) {
+        // Trigger re-calculation of overlay positions
+        setOverlayRefresh(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    // Listen for orientation change on mobile devices
+    window.addEventListener('orientationchange', () => {
+      setTimeout(handleResize, 100); // Small delay for orientation change
+    });
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [imageLoaded]);
 
   const fetchImageDetails = async (id: string) => {
     try {
@@ -49,6 +92,28 @@ const ImageDetail = () => {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRedetectFaces = async () => {
+    if (!imageId) return;
+
+    try {
+      setRedetectLoading(true);
+      const response = await faceAPI.redetectFaces(imageId);
+      
+      if (response.status === "success") {
+        toast.success(response.message);
+        // Refresh image details to show updated face count
+        await fetchImageDetails(imageId);
+      } else {
+        toast.error(response.message || "Failed to re-detect faces");
+      }
+    } catch (error: any) {
+      console.error("Error re-detecting faces:", error);
+      toast.error(error.response?.data?.message || "Failed to re-detect faces");
+    } finally {
+      setRedetectLoading(false);
     }
   };
 
@@ -164,32 +229,95 @@ const ImageDetail = () => {
     setMovingFaceId(null);
   };
 
+  // Delete face function (admin only)
+  const showDeleteConfirmation = (faceId: string) => {
+    if (!isAdminRoute) return;
+    setFaceToDelete(faceId);
+    setShowDeleteConfirm(true);
+  };
+
+  const deleteFace = async () => {
+    if (!faceToDelete) return;
+
+    try {
+      setDeletingFaceId(faceToDelete);
+      setDeleteLoading(true);
+      const result = await faceAPI.deleteFace(faceToDelete);
+
+      // Check if the operation was successful
+      if (result.status === 'success') {
+        setShowDeleteConfirm(false);
+        
+        // Show success message
+        if (result.deleted_empty_person) {
+          toast.success(
+            `Face deleted successfully! Empty person "${result.deleted_empty_person}" was automatically deleted.`
+          );
+        } else {
+          toast.success('Face deleted successfully!');
+        }
+        
+        // Refresh image details to update the face count and remove deleted face
+        if (imageId) {
+          await fetchImageDetails(imageId);
+        }
+      } else {
+        // Handle error response
+        toast.error(result.message || 'Failed to delete face');
+      }
+    } catch (err: any) {
+      console.error('Failed to delete face:', err);
+      // Show error message from API response or generic message
+      const errorMessage = err?.response?.data?.message || 'Failed to delete face';
+      toast.error(errorMessage);
+    } finally {
+      setDeletingFaceId(null);
+      setDeleteLoading(false);
+      setFaceToDelete(null);
+    }
+  };
+
   const getFaceOverlayStyle = (face: any) => {
-    if (!imageRef.current) return {};
+    if (!imageRef.current) return { display: 'none' };
 
     const imgElement = imageRef.current;
     const imgRect = imgElement.getBoundingClientRect();
     const naturalWidth = imgElement.naturalWidth;
     const naturalHeight = imgElement.naturalHeight;
     
-    if (!naturalWidth || !naturalHeight) return {};
+    // Return hidden style if image dimensions aren't available yet
+    if (!naturalWidth || !naturalHeight || imgRect.width === 0 || imgRect.height === 0) {
+      return { display: 'none' };
+    }
 
+    // Calculate scale factors
     const scaleX = imgRect.width / naturalWidth;
     const scaleY = imgRect.height / naturalHeight;
 
     const { top, right, bottom, left } = face.face_location;
     
+    // Calculate responsive positions and dimensions
+    const overlayLeft = left * scaleX;
+    const overlayTop = top * scaleY;
+    const overlayWidth = (right - left) * scaleX;
+    const overlayHeight = (bottom - top) * scaleY;
+    
     return {
       position: 'absolute' as const,
-      left: `${left * scaleX}px`,
-      top: `${top * scaleY}px`,
-      width: `${(right - left) * scaleX}px`,
-      height: `${(bottom - top) * scaleY}px`,
-      border: `3px solid ${face.person ? '#10B981' : '#EF4444'}`,
+      left: `${overlayLeft}px`,
+      top: `${overlayTop}px`,
+      width: `${overlayWidth}px`,
+      height: `${overlayHeight}px`,
+      border: `${Math.max(2, Math.min(4, overlayWidth * 0.015))}px solid ${face.person ? '#10B981' : '#EF4444'}`, // Responsive border width
       backgroundColor: selectedFace === face.face_id ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 0, 0, 0.1)',
       cursor: 'pointer',
-      borderRadius: '4px',
+      borderRadius: `${Math.max(2, Math.min(8, overlayWidth * 0.02))}px`, // Responsive border radius
       transition: 'all 0.2s ease-in-out',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+      // Ensure overlay stays within bounds
+      minWidth: '20px',
+      minHeight: '20px',
+      zIndex: 10,
     };
   };
 
@@ -293,13 +421,18 @@ const ImageDetail = () => {
                 </div>
               </div>
             )}
+            {/* Responsive image container with face overlays */}
             <div className="relative inline-block w-full">
               <img
                 ref={imageRef}
                 src={`data:${imageData.mime_type};base64,${imageData.image_base64}`}  // Use base64 data instead of URL
                 alt={imageData.filename}
                 className="w-full h-auto rounded-xl shadow-lg"
-                onLoad={() => setImageLoaded(true)}
+                onLoad={() => {
+                  setImageLoaded(true);
+                  // Trigger overlay refresh after image loads
+                  setTimeout(() => setOverlayRefresh(prev => prev + 1), 50);
+                }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ci8+CjxwYXRoIGQ9Ik0yMDAgMjAwQzIyMS4yMTcgMjAwIDIzOCAxODMuMjE3IDIzOCAxNjJDMjM4IDE0MC43ODMgMjIxLjIxNyAxMjQgMjAwIDEyNEMxNzguNzgzIDEyNCAxNjIgMTQwLjc4MyAxNjIgMTYyQzE2MiAxODMuMjE3IDE3OC43ODMgMjAwIDIwMCAyMDBaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
@@ -308,14 +441,21 @@ const ImageDetail = () => {
               {/* Face overlays - only show when image is loaded */}
               {imageLoaded && imageData.faces.map((face) => (
                 <div
-                  key={face.face_id}
+                  key={`${face.face_id}-${overlayRefresh}`} // Force re-render when overlay positions change
                   style={getFaceOverlayStyle(face)}
                   onClick={() => handleFaceClick(face.face_id, face.person?.person_id)}
                   className="hover:shadow-lg transition-all duration-200"
                   title={face.person ? `Click to view ${face.person.person_name}` : 'Unknown person'}
                 >
                   {face.person && (
-                    <div className="absolute -top-8 left-0 bg-green-500 text-white text-xs px-2 py-1 rounded-md shadow-sm max-w-32 truncate" title={face.person.person_name}>
+                    <div 
+                      className="absolute left-0 bg-green-500 text-white text-xs px-2 py-1 rounded-md shadow-sm max-w-32 truncate whitespace-nowrap" 
+                      style={{
+                        top: '-28px',
+                        fontSize: '11px'
+                      }}
+                      title={face.person.person_name}
+                    >
                       {face.person.person_name}
                     </div>
                   )}
@@ -328,9 +468,27 @@ const ImageDetail = () => {
         {/* Detected Faces Section - Like PersonDetail */}
         <Card className="bg-white shadow-xl border-gray-200">
           <CardHeader className="bg-gray-50 border-b border-gray-200">
-            <CardTitle className="text-xl font-semibold text-gray-900">
-              Detected Faces ({imageData.total_faces})
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                Detected Faces ({imageData.total_faces})
+              </CardTitle>
+              {isAdminRoute && (
+                <Button
+                  onClick={handleRedetectFaces}
+                  disabled={redetectLoading}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  {redetectLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  {redetectLoading ? "Re-detecting..." : "Redetect Faces"}
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
@@ -374,10 +532,25 @@ const ImageDetail = () => {
                       onClick={() => startMoveFace(face.face_id)}
                       size="sm"
                       variant="outline"
-                      className={`${face.person ? 'flex-1' : 'w-full'} p-2 bg-white border-gray-300 hover:bg-gray-50 shadow-sm`}
+                      className={`${face.person && !isAdminRoute ? 'flex-1' : isAdminRoute ? 'flex-1' : 'w-full'} p-2 bg-white border-gray-300 hover:bg-gray-50 shadow-sm`}
                     >
                       <Move className="h-4 w-4" />
                     </Button>
+                    {isAdminRoute && (
+                      <Button
+                        onClick={() => showDeleteConfirmation(face.face_id)}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 p-2 bg-white border-red-300 hover:bg-red-50 shadow-sm text-red-600 hover:text-red-700"
+                        disabled={deleteLoading && deletingFaceId === face.face_id}
+                      >
+                        {deleteLoading && deletingFaceId === face.face_id ? (
+                          <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -443,6 +616,47 @@ const ImageDetail = () => {
           </div>
         </div>
       )}
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Face</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this face? This action cannot be
+              undone.
+              {imageData && imageData.faces.length === 1 && (
+                <span className="block mt-2 text-red-600 font-medium">
+                  Warning: This is the only face in this image.
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={deleteLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={deleteFace}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Deleting...
+                </>
+              ) : (
+                'Delete Face'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

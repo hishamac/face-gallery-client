@@ -2,19 +2,18 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="mt-auto py-8 px-4">
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="mt-auto py-8 px-4 bg-white">
+      <div className="container mx-auto max-w-6xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
           {/* Brand & Description */}
-          <div>
-            <img
-              src="https://storage.festie.app/files.festie.app/60063219-c875-46e0-844f-184dcd56ff9c/1758803571399-990f33c3f11d0ceb-ei-1758803295199-removebg-preview-1.png
-"
-              alt="Face Gallery"
-              className="h-12 w-auto rounded-lg mb-4"
-            />
+          <div className="space-y-5">
+              <img
+                src="https://storage.festie.app/files.festie.app/60063219-c875-46e0-844f-184dcd56ff9c/1758803571399-990f33c3f11d0ceb-ei-1758803295199-removebg-preview-1.png"
+                alt="Fansat Arts"
+                className="h-12 w-auto rounded-lg mr-3"
+              />
             <p className="text-gray-600 text-sm leading-relaxed mb-6">
-              Face Gallery - DHIU ARTS FEST. Join us for an unforgettable
+              Fansat Arts - DHIU ARTS FEST. Join us for an unforgettable
               experience.
             </p>
 
@@ -32,7 +31,7 @@ export default function Footer() {
                 >
                   <path
                     fillRule="evenodd"
-                    d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.749.097.118.110.221.082.341-.09.381-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.749-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24c6.624 0 11.99-5.367 11.99-12C24.007 5.367 18.641.001 12.017.001z"
+                    d="M7.465 1.066C8.638 1.012 9.012 1 12 1c2.988 0 3.362.013 4.534.066 1.172.053 1.972.24 2.672.511.731.285 1.347.666 1.962 1.281.615.615.996 1.231 1.281 1.962.271.7.458 1.5.512 2.672C22.988 8.639 23 9.013 23 12c0 2.988-.013 3.362-.066 4.535-.054 1.17-.241 1.97-.512 2.67-.285.732-.666 1.349-1.281 1.963-.615.615-1.231.997-1.962 1.282-.7.271-1.5.458-2.672.512C15.362 22.988 14.988 23 12 23s-3.362-.013-4.535-.066c-1.17-.054-1.97-.241-2.67-.512a5.402 5.402 0 0 1-1.963-1.282 5.402 5.402 0 0 1-1.282-1.962c-.271-.7-.458-1.5-.512-2.672C1.012 15.362 1 14.988 1 12s.013-3.362.066-4.534c.054-1.172.241-1.972.512-2.672.285-.731.666-1.347 1.282-1.962C3.475 2.247 4.091 1.866 4.822 1.58c.7-.271 1.5-.458 2.672-.512L7.465 1.066ZM12 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm6.406-11.845a1.44 1.44 0 1 1 0 2.881 1.44 1.44 0 0 1 0-2.881Z"
                     clipRule="evenodd"
                   />
                 </svg>
@@ -73,7 +72,7 @@ export default function Footer() {
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
-                  <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
+                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
                 </svg>
               </a>
             </div>
@@ -81,8 +80,8 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
+            <ul className="space-y-3 text-sm">
               <li>
                 <a
                   href="https://fansat.festie.app/results"
@@ -136,28 +135,27 @@ export default function Footer() {
 
           {/* Made with */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-4">Made with</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">Made with</h3>
             <div className="mb-4">
               <img
-                src="https://fansat.festie.app/logo.svg
-"
+                src="https://fansat.festie.app/logo.svg"
                 alt="FESTIE"
                 className="h-8"
               />
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+            <p className="text-sm text-gray-600 leading-relaxed mb-6">
               Manage registrations, scheduling, scoring, and results — all in
               one platform. No paperwork, no chaos. Just smooth fests, every
               time.
             </p>
-            <button className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-red-600 hover:to-orange-600 transition-colors">
+            <button className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-2 rounded-lg text-sm font-medium hover:from-red-600 hover:to-orange-600 transition-colors">
               Create Your Own Fest
             </button>
           </div>
         </div>
 
         {/* Bottom Copyright */}
-        <div className="pt-6 mt-8">
+        <div className="pt-8 mt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
             <p>© 2025 Festie.app All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">

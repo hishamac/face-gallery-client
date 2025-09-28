@@ -32,7 +32,7 @@ export const faceAPI = {
   },
 
   // Search for similar faces using an uploaded image
-  searchByImage: async (file: File, tolerance: number = 1, maxResults: number = 5): Promise<{
+  searchByImage: async (file: File): Promise<{
     message: string;
     matches: Array<{
       face_id: string;
@@ -45,15 +45,16 @@ export const faceAPI = {
       image?: {
         image_id: string;
         filename: string;
+        mime_type: string;
+        image_base64: string;  // Add base64 image data
       };
       cropped_face_filename?: string;
+      face_base64: string;  // Add base64 face data
     }>;
     total_faces_searched: number;
   }> => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('tolerance', tolerance.toString());
-    formData.append('max_results', maxResults.toString());
     
     const response = await api.post('/images/search-by-image', formData, {
       headers: {
@@ -302,6 +303,28 @@ export const faceAPI = {
     message: string;
   }> => {
     const response = await api.delete(`/sections/${sectionId}`);
+    return response.data;
+  },
+
+  // Re-detect faces in an existing image
+  redetectFaces: async (imageId: string): Promise<{
+    status: "success" | "error";
+    message: string;
+    faces_detected?: number;
+    previous_faces?: number;
+    detection_methods?: Array<{
+      method: string;
+      faces_found: number;
+    }>;
+    image_id?: string;
+    faces?: Array<{
+      face_id: string;
+      person_id?: string;
+      person_name: string;
+      confidence: number;
+    }>;
+  }> => {
+    const response = await api.post(`/images/${imageId}/redetect-faces`);
     return response.data;
   },
 };

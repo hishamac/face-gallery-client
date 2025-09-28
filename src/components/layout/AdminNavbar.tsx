@@ -20,10 +20,10 @@ import { Button } from "../ui/button";
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard, primary: true },
   { name: "Images", href: "/admin/images", icon: Image, primary: true },
-  { name: "Albums", href: "/admin/albums", icon: FolderOpen, primary: true },
-  { name: "Sections", href: "/admin/sections", icon: Section, primary: true },
   { name: "Persons", href: "/admin/persons", icon: Users, primary: true },
-  { name: "Gallery", href: "/", icon: Image, primary: true },
+  { name: "Albums", href: "/admin/albums", icon: FolderOpen, primary: false }, // Secondary
+  { name: "Sections", href: "/admin/sections", icon: Section, primary: false }, // Secondary
+  { name: "Gallery", href: "/", icon: Image, primary: false }, // Secondary
 ];
 
 export default function AdminNavbar() {
@@ -88,21 +88,66 @@ export default function AdminNavbar() {
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
-        <div className="hidden xl:flex items-center space-x-1">
+        {/* Desktop Navigation - Show all items on large screens */}
+        <div className="hidden lg:flex items-center space-x-1">
           {navigation.map((item) => (
             <NavItem key={item.name} item={item} />
           ))}
         </div>
 
+        {/* Tablet/Small Desktop Navigation - Show primary + More button */}
+        <div className="hidden md:flex lg:hidden items-center space-x-1">
+          {primaryNavItems.map((item) => (
+            <NavItem key={item.name} item={item} />
+          ))}
+          
+          {/* More dropdown for secondary items */}
+          {secondaryNavItems.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-300"
+                >
+                  <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
+                  <span className="text-sm font-medium">More</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-48 bg-card/95 backdrop-blur-xl border border-border rounded-xl mt-2 shadow-xl"
+              >
+                {secondaryNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <DropdownMenuItem key={item.name} asChild>
+                      <Link
+                        to={item.href}
+                        className={`flex items-center space-x-3 w-full px-4 py-3 text-sm rounded-lg transition-all duration-200 ${
+                          active
+                            ? "text-primary bg-primary/10"
+                            : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" aria-hidden="true" />
+                        <span>{item.name}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+
         {/* Mobile Navigation */}
-        <div className="flex xl:hidden items-center space-x-1">
-          {/* Very Small Mobile - Hamburger Menu */}
-          <div className="flex sm:hidden">
-            <DropdownMenu
-              open={isMobileMenuOpen}
-              onOpenChange={setIsMobileMenuOpen}
-            >
+        <div className="flex md:hidden items-center space-x-1">
+          {/* Mobile - Hamburger Menu */}
+          <DropdownMenu
+            open={isMobileMenuOpen}
+            onOpenChange={setIsMobileMenuOpen}
+          >
               <DropdownMenuTrigger asChild>
                 <Button
                   variant={"outline"}
@@ -137,54 +182,6 @@ export default function AdminNavbar() {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-
-          {/* Small Mobile and up - Show primary items + More dropdown */}
-          <div className="hidden sm:flex items-center space-x-1">
-            {/* Primary items always visible */}
-            {primaryNavItems.map((item) => (
-              <NavItem key={item.name} item={item} />
-            ))}
-
-            {/* More dropdown for secondary items */}
-            {secondaryNavItems.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-300"
-                  >
-                    <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
-                    <span className="text-sm font-medium">More</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-48 bg-card/95 backdrop-blur-xl border border-border rounded-xl mt-2 shadow-xl"
-                >
-                  {secondaryNavItems.map((item) => {
-                    const Icon = item.icon;
-                    const active = isActive(item.href);
-                    return (
-                      <DropdownMenuItem key={item.name} asChild>
-                        <Link
-                          to={item.href}
-                          className={`flex items-center space-x-3 w-full px-4 py-3 text-sm rounded-lg transition-all duration-200 ${
-                            active
-                              ? "text-primary bg-primary/10"
-                              : "text-foreground hover:bg-accent hover:text-accent-foreground"
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" aria-hidden="true" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
         </div>
       </div>
     </div>

@@ -70,6 +70,11 @@ function App() {
               <Gallery />
             </AdminLayout>
           } />
+          <Route path="/admin/images/:imageId" element={
+            <AdminLayout>
+              <ImageDetail />
+            </AdminLayout>
+          } />
         </Routes>
       </Router>
       <Toaster />
